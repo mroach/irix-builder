@@ -1,8 +1,14 @@
-FROM debian:buster-slim
+ARG IRIX_VER=6.5.30
 
-ARG GCC_URL=https://github.com/onre/gcc/archive/gcc-4_7-irix.zip
-ARG IRIX_ROOT_URL=http://mirror.larbob.org/compilertron/irix-root.6.5.30.tar.bz2
-ARG BINUTILS_URL=https://mirrors.tripadvisor.com/gnu/binutils/binutils-2.17a.tar.bz2
+FROM debian:buster-slim AS irix-builder:${IRIX_VER}
+
+ARG GCC_URL=http://dl.mroach.com/irix/buildtools/gcc-4_7-irix.zip
+ARG IRIX_ROOT_URL=http://dl.mroach.com/irix/buildtools/irix-root.${IRIX_VER}.tar.bz2
+ARG BINUTILS_URL=http://dl.mroach.com/irix/buildtools/binutils-2.17a.tar.bz2
+
+ARG GCC_SHA256=51bf0ad1ba717ec186d9e1a6fe91367b128c71e82e66624cff3287c823b4e45f
+ARG IRIX_ROOT_SHA256=b8b6363121a99aaf0309d0a6f63a18c203ddbb34f53683c9a56d568be2b6a549
+ARG BINUTILS_SHA256=547355f0abb865995ad340e0383181d0cfef52d5cce2fd7e10a8a7db371a276a
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -31,10 +37,12 @@ RUN mkdir -p /opt/src/gcc-build \
              /opt/src/binutils
 
 RUN curl -LO $IRIX_ROOT_URL && \
-    tar xf irix-root.6.5.30.tar.bz2 -C /opt/irix-root && \
-    rm irix-root.6.5.30.tar.bz2
+    echo "$IRIX_ROOT_SHA256 gcc-4_7-irix.zip" | shasum -a256 -c && \
+    tar xf irix-root.${IRIX_VER}.tar.bz2 -C /opt/irix-root && \
+    rm irix-root.${IRIX_VER}.tar.bz2
 
 RUN curl -LO $GCC_URL && \
+    echo "$GCC_SHA256 gcc-4_7-irix.zip" | shasum -a256 -c && \
     unzip gcc-4_7-irix.zip -d /opt/src && \
     rm gcc-4_7-irix.zip && \
     mv /opt/src/gcc-gcc-4_7-irix /opt/src/gcc
@@ -46,6 +54,7 @@ COPY files/stdlib_core.h /opt/gcc/mips-sgi-irix6.5/sys-include/internal/
 COPY files/gcc.texi /opt/src/gcc/gcc/doc/
 
 RUN curl -LO $BINUTILS_URL && \
+    echo "$BINUTILS_SHA256 binutils-2.17a.tar.bz2" | shasum -a256 -c && \
     tar xf binutils-2.17a.tar.bz2 -C /opt/src/binutils && \
     rm binutils-2.17a.tar.bz2 && \
     cd /opt/src/binutils/binutils-2.17 && \
