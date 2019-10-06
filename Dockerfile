@@ -63,7 +63,7 @@ RUN curl -LO $BINUTILS_URL && \
                 --with-sysroot=/opt/irix-root \
                 --enable-werror=no && \
     make && make install && make clean && \
-    rm -rf /opt/src/binutils-2
+    rm -rf /opt/src/binutils
 
 RUN export AS_FOR_TARGET="mips-sgi-irix6.5-as" \
            LD_FOR_TARGET="mips-sgi-irix6.5-ld" \
