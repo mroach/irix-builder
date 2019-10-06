@@ -103,5 +103,6 @@ ENV PATH=/opt/binutils/bin:/opt/gcc/bin:$PATH \
     CFLAGS="-B/opt/binutils/bin/mips-sgi-irix6.5- --sysroot=/opt/irix-root" \
     CXXFLAGS="-B/opt/binutils/bin/mips-sgi-irix6.5- --sysroot=/opt/irix-root" \
     TARGET=mips-sgi-irix6.5 \
-    PREFIX=/opt/gcc \
-    TARGET_PREFIX=$PREFIX/$TARGET
+    PREFIX=/opt/gcc
+
+ENV TARGET_PREFIX=$PREFIX/$TARGET
