@@ -24,7 +24,7 @@ RUN apt-get update && \
       gettext \
       curl \
       ca-certificates \
-      vim-tiny && \
+      vim \
     apt-get clean
 
 WORKDIR /opt
