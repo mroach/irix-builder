@@ -89,7 +89,13 @@ RUN export AS_FOR_TARGET="mips-sgi-irix6.5-as" \
 
 RUN mkdir /opt/gcc/mips-sgi-irix6.5 && \
     ln -s /opt/binutils/mips-sgi-irix6.5/bin /opt/gcc/mips-sgi-irix6.5/bin && \
-    ln -s /opt/irix-root/usr/include /opt/gcc/mips-sgi-irix6.5/sys-include
+    ln -s /opt/irix-root/usr/include /opt/gcc/mips-sgi-irix6.5/sys-include && \
+    ln -s /opt/src/gcc-build/mips-sgi-irix6.5/libgcc/libgcc_s.so \
+          /opt/gcc/lib/gcc/mips-sgi-irix6.5/4.7.4/libgcc_s.so && \
+    cp /opt/src/gcc-build/mips-sgi-irix6.5/libstdc++-v3/src/.libs/libstdc++.so* \
+       /opt/gcc/lib/gcc/mips-sgi-irix6.5/4.7.4/. && \
+    cp /opt/src/gcc-build/mips-sgi-irix6.5/libstdc++-v3/src/.libs/libstdc++.a \
+       /opt/gcc/lib/gcc/mips-sgi-irix6.5/4.7.4/.
 
 ENV PATH=/opt/binutils/bin:/opt/gcc/bin:$PATH \
     CC="/opt/gcc/bin/mips-sgi-irix6.5-gcc" \
