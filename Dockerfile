@@ -1,14 +1,15 @@
+FROM debian:buster-slim AS builder-base
+
 ARG IRIX_VER=6.5.30
+ARG GCC_URL=http://dl.mroach.com/irix/buildtools/gcc-4.7-irix.tar.xz
+ARG IRIX_ROOT_URL=http://dl.mroach.com/irix/buildtools/irix-root.${IRIX_VER}.tar.xz
+ARG BINUTILS_URL=http://dl.mroach.com/irix/buildtools/binutils-2.17a.tar.xz
+ARG MOTIF_URL=http://dl.mroach.com/irix/buildtools/motif-2.1.tar.xz
 
-FROM debian:buster-slim AS irix-builder:${IRIX_VER}
-
-ARG GCC_URL=http://dl.mroach.com/irix/buildtools/gcc-4_7-irix.zip
-ARG IRIX_ROOT_URL=http://dl.mroach.com/irix/buildtools/irix-root.${IRIX_VER}.tar.bz2
-ARG BINUTILS_URL=http://dl.mroach.com/irix/buildtools/binutils-2.17a.tar.bz2
-
-ARG GCC_SHA256=51bf0ad1ba717ec186d9e1a6fe91367b128c71e82e66624cff3287c823b4e45f
-ARG IRIX_ROOT_SHA256=b8b6363121a99aaf0309d0a6f63a18c203ddbb34f53683c9a56d568be2b6a549
-ARG BINUTILS_SHA256=547355f0abb865995ad340e0383181d0cfef52d5cce2fd7e10a8a7db371a276a
+ARG GCC_SHA256=daa730e1ad14ea10728dfbbfa59a7bb3075005f3dcc25d755b053fdec4daaa01
+ARG IRIX_ROOT_SHA256=424bff47951dcdc0552495c56acff48b7bf1c40c493133896cfd9891021d6a56
+ARG BINUTILS_SHA256=e4be18fec00212f187c4423088faf4fe99aee87f040068f4c1fe75b7176adc46
+ARG MOTIF_SHA256=5828d7180dc668f1ded9addef620bdc06e2c561f74c379fec838f1c9bc3da40f
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -34,18 +35,28 @@ RUN mkdir /opt/src
 RUN mkdir -p /opt/src/gcc-build \
              /opt/gcc/mips-sgi-irix6.5 \
              /opt/irix-root \
-             /opt/src/binutils
+             /opt/src/binutils \
+             /opt/pkg
 
-RUN curl -LO $IRIX_ROOT_URL && \
-    echo "$IRIX_ROOT_SHA256 gcc-4_7-irix.zip" | shasum -a256 -c && \
-    tar xf irix-root.${IRIX_VER}.tar.bz2 -C /opt/irix-root && \
-    rm irix-root.${IRIX_VER}.tar.bz2
+RUN archive=$(basename $IRIX_ROOT_URL); \
+    curl -LO $IRIX_ROOT_URL && \
+    echo "$IRIX_ROOT_SHA256  $archive" | shasum -a256 -c && \
+    tar xf $archive -C /opt/irix-root && \
+    rm $archive
 
-RUN curl -LO $GCC_URL && \
-    echo "$GCC_SHA256 gcc-4_7-irix.zip" | shasum -a256 -c && \
-    unzip gcc-4_7-irix.zip -d /opt/src && \
-    rm gcc-4_7-irix.zip && \
-    mv /opt/src/gcc-gcc-4_7-irix /opt/src/gcc
+RUN archive=$(basename $MOTIF_URL); \
+    curl -LO $MOTIF_URL && \
+    echo "$MOTIF_SHA256  $archive" | shasum -a256 -c && \
+    tar xf $archive && \
+    rm $archive && \
+    mv Motif-2.1 /opt/motif
+
+RUN archive=$(basename $GCC_URL); \
+    curl -LO $GCC_URL && \
+    echo "$GCC_SHA256  $archive" | shasum -a256 -c && \
+    tar xf $archive && \
+    rm $archive && \
+    mv gcc-4.7-irix /opt/src/gcc
 
 RUN ln -s /opt/irix-root/usr/include /opt/gcc/mips-sgi-irix6.5/sys-include && \
     ln -s /opt/irix-root/usr/lib32 /usr/lib32
@@ -53,10 +64,11 @@ RUN ln -s /opt/irix-root/usr/include /opt/gcc/mips-sgi-irix6.5/sys-include && \
 COPY files/stdlib_core.h /opt/gcc/mips-sgi-irix6.5/sys-include/internal/
 COPY files/gcc.texi /opt/src/gcc/gcc/doc/
 
-RUN curl -LO $BINUTILS_URL && \
-    echo "$BINUTILS_SHA256 binutils-2.17a.tar.bz2" | shasum -a256 -c && \
-    tar xf binutils-2.17a.tar.bz2 -C /opt/src/binutils && \
-    rm binutils-2.17a.tar.bz2 && \
+RUN archive=$(basename $BINUTILS_URL); \
+    curl -LO $BINUTILS_URL && \
+    echo "$BINUTILS_SHA256  $archive" | shasum -a256 -c && \
+    tar xf $archive -C /opt/src/binutils && \
+    rm $archive && \
     cd /opt/src/binutils/binutils-2.17 && \
     ./configure --target=mips-sgi-irix6.5 \
                 --prefix=/opt/binutils \
@@ -103,6 +115,7 @@ ENV PATH=/opt/binutils/bin:/opt/gcc/bin:$PATH \
     CFLAGS="-B/opt/binutils/bin/mips-sgi-irix6.5- --sysroot=/opt/irix-root" \
     CXXFLAGS="-B/opt/binutils/bin/mips-sgi-irix6.5- --sysroot=/opt/irix-root" \
     TARGET=mips-sgi-irix6.5 \
-    PREFIX=/opt/gcc
+    PREFIX=/opt/gcc \
+    X11_PATH=/opt/motif
 
 ENV TARGET_PREFIX=$PREFIX/$TARGET
