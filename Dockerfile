@@ -25,7 +25,7 @@ RUN apt-get update && \
       gettext \
       curl \
       ca-certificates \
-      vim \
+      vim && \
     apt-get clean
 
 WORKDIR /opt
