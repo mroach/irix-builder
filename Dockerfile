@@ -16,6 +16,7 @@ RUN apt-get update && \
       build-essential \
       bison \
       flex \
+      automake \
       libgmp-dev \
       libmpfr-dev \
       libmpc-dev \
@@ -25,6 +26,8 @@ RUN apt-get update && \
       gettext \
       curl \
       ca-certificates \
+      ripgrep \
+      less \
       vim && \
     apt-get clean
 
