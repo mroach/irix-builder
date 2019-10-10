@@ -1,0 +1,28 @@
+pkgname=multi-aterm
+pkgver=0.2.1
+pkgdesc="terminal emulator"
+url=http://www.nongnu.org/materm/materm.html
+sources=("http://www.nongnu.org/materm/$pkgname-$pkgver.tar.gz")
+sha256sums=(de12604e29dabd0157ce061c785b482ad8c9721027ec31f60609dc9f647bd5fb)
+
+prepare() {
+  cd $pkgname-$pkgver
+
+  # comment-out aborts caused by cross-compiling checks
+  sed -i'' '3529,3535 {s/^/#/};3541 {s/^/#/}' configure
+  sed -i'' '7684,7688 {s/^/#/};7733 {s/^/#/}' configure
+}
+
+build() {
+  cd $pkgname-$pkgver
+
+  ./configure --prefix=/opt/local --host=$TARGET --with-xpm=$X11_PATH
+
+  make
+}
+
+package() {
+  cd "$pkgname-$pkgver"
+
+  make DESTDIR="$pkgdir" install
+}

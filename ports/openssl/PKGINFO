@@ -1,0 +1,21 @@
+pkgname=openssl
+_ver=1.0.2t
+pkgver=${_ver/[a-z]/.${_ver//[0-9.]/}}
+pkgdesc="The Open Source toolkit for Secure Sockets Layer and Transport Layer Security"
+licenses=('custom:BSD')
+sources=("https://www.openssl.org/source/openssl-${_ver}.tar.gz")
+sha256sums=(14cb464efe7ac6b54799b34456bd69558a749a4931ecfd9cf9f71d7881cac7bc)
+
+build() {
+  cd "$pkgname-$_ver"
+
+  ./Configure irix-mips3-gcc shared --prefix=/opt/local --openssldir=$pkgdir/etc/ssl
+
+  make
+}
+
+package() {
+  cd "$pkgname-$_ver"
+
+  make INSTALLTOP="$pkgdir" install
+}

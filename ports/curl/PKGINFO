@@ -1,0 +1,28 @@
+pkgname=curl
+pkgver=7.66.0
+pkgdesc="An URL retrieval utility and library"
+url=https://curl.haxx.se
+depends=(openssl zlib)
+provides=(libcurl.so)
+sources=("https://curl.haxx.se/download/curl-$pkgver.tar.bz2")
+sha256sums=(6618234e0235c420a21f4cb4c2dd0badde76e6139668739085a70c4e2fe7a141)
+
+build() {
+  cd $pkgname-$pkgver
+
+  ./configure --prefix=/opt/local --host=$TARGET \
+              --disable-ldap \
+              --disable-ldaps \
+              --with-ssl=$(whereis_dep openssl) \
+              --without-libpsl \
+              --disable-threaded-resolver
+
+  make
+}
+
+package() {
+  cd "$pkgname-$pkgver"
+
+  # the 'install' command isn't using the correct strip program for cross-compilation
+  make DESTDIR="$pkgdir" install
+}

@@ -1,0 +1,25 @@
+pkgname=coreutils
+pkgver=8.31
+pkgdesc="The basic file, shell and text manipulation utilities of the GNU operating system"
+url='https://www.gnu.org/software/coreutils'
+licenses=('GPL3')
+sources=("https://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.xz")
+md5sums=(0009a224d8e288e8ec406ef0161f9293)
+depends=(openssl)
+
+build() {
+  cd "$pkgname-$pkgver"
+
+  export CPPFLAGS="-I$(whereis_dep openssl)/include ${CPPFLAGS:-}"
+
+  ./configure --prefix=/opt/local --libexecdir=/opt/local/lib --host=$TARGET \
+              --with-openssl
+
+  make
+}
+
+package() {
+  cd "$pkgname-$pkgver"
+
+  make DESTDIR="$pkgdir" install
+}

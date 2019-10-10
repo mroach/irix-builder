@@ -1,0 +1,41 @@
+pkgname=bash
+_basever=5.0
+pkgver=${_basever}
+pkgrel=1
+pkgdesc="The GNU Bourne Again shell"
+url=https://www.gnu.org/software/bash/bash.html
+licenses=('GPL')
+sources=("http://ftpmirror.gnu.org/gnu/bash/$pkgname-$_basever.tar.gz")
+sha256sums=('b4a80f2ac66170b2913efbfb9f2594f1f76c7b1afd11f799e22035d63077fb4d')
+depends=(readline ncurses)
+
+build() {
+  cd "$pkgname-$_basever"
+
+  _bashconfig=(-DDEFAULT_PATH_VALUE=\'\"/usr/local/sbin:/usr/local/bin:/usr/bin\"\'
+               -DSTANDARD_UTILS_PATH=\'\"/usr/bin\"\'
+               -DSYS_BASHRC=\'\"/opt/local/etc/bash.bashrc\"\'
+               -DSYS_BASH_LOGOUT=\'\"/opt/local/etc/bash.bash_logout\"\'
+               -DNON_INTERACTIVE_LOGIN_SHELLS)
+
+  export CFLAGS="${CFLAGS} ${_bashconfig[@]}"
+  export LDFLAGS="-L$(whereis_dep readline)/opt/local/lib"
+
+  ./configure --prefix=/opt/local --host=$TARGET \
+              --with-curses --enable-readline --with-installed-readline
+
+  make
+}
+
+package() {
+  cd "$pkgname-$_basever"
+
+  # Remove loadables that don't compile
+  # fdflags: uses O_CLOEXEC which is not defined
+  # seq: uses PRIdMAX which is not defined
+  # push: something
+  sed -i -r '/^ALLPROG =/,/^OTHERPROG/ s/\bfdflags\b//;s/\bpush\b//;s/\bseq\b//' \
+      examples/loadables/Makefile
+
+  make DESTDIR="$pkgdir" install
+}

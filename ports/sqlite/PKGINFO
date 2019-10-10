@@ -1,0 +1,24 @@
+pkgname=sqlite
+_srcver=3300000
+pkgver=3.30.0
+pkgdesc="A C library that implements an SQL database engine"
+url=https://www.sqlite.org/
+depends=(glibc gcc-libs)
+provides=(libncurses++w.so libformw.so libmenuw.so libpanelw.so libncursesw.so)
+sources=("https://sqlite.org/2019/sqlite-autoconf-${_srcver}.tar.gz")
+sha1sums=(785c0f6f00fe1871cb1dd97893267cb50db03b9b)
+
+build() {
+  cd sqlite-autoconf-$_srcver
+
+  ./configure --prefix=/opt/local --host=$TARGET \
+              --disable-static
+
+  make
+}
+
+package() {
+  cd sqlite-autoconf-$_srcver
+
+  make DESTDIR="$pkgdir" install
+}
