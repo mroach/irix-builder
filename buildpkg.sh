@@ -7,6 +7,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 WORKDIR_ROOT=/opt/workdir
 PKG_OUT_ROOT=/opt/pkg
 STAGE_ROOT=/opt/stage
+CACHE_DIR=/opt/cache
 PORTS_DIR=${PORTS_DIR:-/opt/ports}
 
 export MAKEFLAGS="-j$(nproc)"
@@ -67,6 +68,7 @@ source $pkginfo_path
 workdir=$WORKDIR_ROOT/$pkgname/$pkgver
 pkgdir=$STAGE_ROOT/$pkgname/$pkgver
 pkgpath=$PKG_OUT_ROOT/$pkgname-$pkgver-$TARGET.pkg.tar.gz
+pkgcache=$CACHE_DIR/$pkgname
 
 whereis_dep() {
 	path=$(find $STAGE_ROOT/$1 -maxdepth 1 -type d | tail -n 1)
@@ -85,6 +87,7 @@ fi
 
 [ -d $workdir ] || mkdir -p $workdir
 [ -d $pkgdir ] || mkdir -p $pkgdir
+[ -d $pkgcache ] || mkdir -p $pkgcache
 
 cd $workdir
 echo_debug "Working in $workdir"
@@ -165,13 +168,21 @@ quiet_run() {
 for findex in "${!sources[@]}"; do
 	url="${sources[$findex]}"
 	archive=$(basename "$url")
+	archive_path=$pkgcache/$archive
+	do_download="yes"
 
-	echo_info	"Fetching source $url"
+	if [ -f $archive_path ]; then
+		verify_source $findex $archive_path && do_download="no" || :
+		[ $do_download == "no" ] && echo_info "Using cached file $archive"
+	fi
 
-	curl -LO "$url"
-	verify_source $findex $archive
-	extract $archive
-	rm $archive
+	if [ $do_download == "yes" ]; then
+		echo_info "Fetching source $url"
+		curl -# -L -o $archive_path "$url"
+		verify_source $findex $archive_path
+	fi
+
+	extract $archive_path
 done
 
 echo_info "Preparing"
