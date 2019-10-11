@@ -3,7 +3,8 @@
 
 set -euo pipefail
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+SCRIPTPATH="$( realpath $0 )"
+
 WORKDIR_ROOT=/opt/workdir
 PKG_OUT_ROOT=/opt/pkg
 STAGE_ROOT=/opt/stage
@@ -17,6 +18,7 @@ export STRIPPROG="$TARGET-strip"
 pkg=$1; shift
 clean=false
 verbose=false
+raw_opts="$@"
 
 for arg in "$@"; do
 	case $arg in
@@ -184,6 +186,18 @@ quiet_run() {
 		}
 	fi
 }
+
+if [ -v depends ]; then
+	for dep in "${depends[@]}"; do
+		dep_installed=$(is_dep_installed $dep)
+		if [ "$dep_installed" == "yes" ]; then
+			echo_debug "Dependency '$dep' is already built"
+		else
+			echo_info "Building dependency '$dep'"
+			$SCRIPTPATH $dep $raw_opts
+		fi
+	done
+fi
 
 for findex in "${!sources[@]}"; do
 	url="${sources[$findex]}"
