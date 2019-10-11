@@ -2,7 +2,6 @@ pkgname=ncurses
 pkgver=6.1
 pkgdesc="curses emulation library"
 url=https://invisible-island.net/ncurses/ncurses.html
-depends=(glibc gcc-libs)
 provides=(libncurses++w.so libformw.so libmenuw.so libpanelw.so libncursesw.so)
 sources=("https://ftp.gnu.org/pub/gnu/ncurses/$pkgname-$pkgver.tar.gz")
 sha256sums=(aa057eeeb4a14d470101eff4597d5833dcef5965331be3528c08d99cebaa0d17)
