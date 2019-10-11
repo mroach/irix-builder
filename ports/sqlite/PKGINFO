@@ -11,7 +11,7 @@ sha1sums=(785c0f6f00fe1871cb1dd97893267cb50db03b9b)
 build() {
   cd sqlite-autoconf-$_srcver
 
-  ./configure --prefix=/opt/local --host=$TARGET \
+  ./configure --prefix=$pkgprefix --host=$TARGET \
               --disable-static
 
   make

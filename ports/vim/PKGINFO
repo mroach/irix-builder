@@ -8,7 +8,7 @@ sha256sums=(ad862642452dd32ff8290019fbe559c6108dadfab602a96a6568070fe7cb61e6)
 build() {
   cd $pkgname-$pkgver
 
-  ./configure --prefix=/opt/local --host=$TARGET --with-features=huge
+  ./configure --prefix=$pkgprefix --host=$TARGET --with-features=huge
 
   make
 }

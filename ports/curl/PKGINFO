@@ -10,7 +10,7 @@ sha256sums=(6618234e0235c420a21f4cb4c2dd0badde76e6139668739085a70c4e2fe7a141)
 build() {
   cd $pkgname-$pkgver
 
-  ./configure --prefix=/opt/local --host=$TARGET \
+  ./configure --prefix=$pkgprefix --host=$TARGET \
               --disable-ldap \
               --disable-ldaps \
               --with-ssl=$(whereis_dep openssl) \

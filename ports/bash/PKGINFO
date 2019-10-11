@@ -14,14 +14,15 @@ build() {
 
   _bashconfig=(-DDEFAULT_PATH_VALUE=\'\"/usr/local/sbin:/usr/local/bin:/usr/bin\"\'
                -DSTANDARD_UTILS_PATH=\'\"/usr/bin\"\'
-               -DSYS_BASHRC=\'\"/opt/local/etc/bash.bashrc\"\'
-               -DSYS_BASH_LOGOUT=\'\"/opt/local/etc/bash.bash_logout\"\'
+               -DSYS_BASHRC=\'\"$pkgprefix/etc/bash.bashrc\"\'
+               -DSYS_BASH_LOGOUT=\'\"$pkgprefix/etc/bash.bash_logout\"\'
                -DNON_INTERACTIVE_LOGIN_SHELLS)
 
   export CFLAGS="${CFLAGS} ${_bashconfig[@]}"
-  export LDFLAGS="-L$(whereis_dep readline)/opt/local/lib"
+  export LDFLAGS="-L$(whereis_dep readline)/lib"
 
-  ./configure --prefix=/opt/local --host=$TARGET \
+
+  ./configure --prefix=$pkgprefix --host=$TARGET \
               --with-curses --enable-readline --with-installed-readline
 
   make

@@ -7,6 +7,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 WORKDIR_ROOT=/opt/workdir
 PKG_OUT_ROOT=/opt/pkg
 STAGE_ROOT=/opt/stage
+PREFIX_ROOT=/opt/sw
 CACHE_DIR=/opt/cache
 PORTS_DIR=${PORTS_DIR:-/opt/ports}
 
@@ -45,33 +46,45 @@ echo_debug() {
 echo_error() {
 	echo -e "\e[91m==>\e[0m \e[21m$@\e[0m"
 }
+echo_success() {
+	echo -e "\e[92m==>\e[0m \e[1m$@\e[0m"
+}
 
 [ -z "$pkg" ] && (usage; exit 1)
 
 pkginfo_path=$PORTS_DIR/$pkg/PKGINFO
 
 if [ ! -f "$pkginfo_path" ]; then
-	cat <<-EOF
-		Could not find build script for '$pkg'
-		Looked for: $pkginfo_path
-	EOF
+	echo_error Could not find build script for '$pkg' at $pkginfo_path
 	exit 1
 fi
 
 prepare() { return 0; }
 check() { return 0; }
 depends=()
+broken=""
 
 echo_info "Loading $pkginfo_path"
 source $pkginfo_path
 
+if [ -n "$broken" ]; then
+	echo_info "Package is marked as broken. Aborting build"
+	echo $broken | sed 's/^/  '
+	exit 0
+fi
+
 workdir=$WORKDIR_ROOT/$pkgname/$pkgver
-pkgdir=$STAGE_ROOT/$pkgname/$pkgver
 pkgpath=$PKG_OUT_ROOT/$pkgname-$pkgver-$TARGET.pkg.tar.gz
+pkgprefix=$PREFIX_ROOT/$pkgname/$pkgver
+pkgdir=$STAGE_ROOT/$pkgname
 pkgcache=$CACHE_DIR/$pkgname
 
+find_dep_path() {
+	find $STAGE_ROOT/$1$PREFIX_ROOT/$1 -maxdepth 1 -type d 2>/dev/null | tail -n 1 || :
+}
+
 whereis_dep() {
-	path=$(find $STAGE_ROOT/$1 -maxdepth 1 -type d | tail -n 1)
+	path=$(find_dep_path $1)
 	if [ -z "$path" ]; then
 		echo_error "Unable to find path for dependency '$1'"
 		return 1
@@ -79,11 +92,18 @@ whereis_dep() {
 	echo $path
 }
 
+is_dep_installed() {
+	[ -n "$(find_dep_path $1)" ] && echo "yes" || echo "no"
+}
+
 if [ "$clean" = true ]; then
 	echo_info "Cleaning $workdir and $pkgdir"
 	[ -d $workdir ] && rm -rf $workdir
-	[ -d $pkgdir ] && rm -rf $pkgdir
 fi
+
+# always purge the staging dir, otherwise multiple builds of the same package
+# could produce unexpected files, such as if you enable or disable features
+[ -d $pkgdir ] && rm -rf $pkgdir
 
 [ -d $workdir ] || mkdir -p $workdir
 [ -d $pkgdir ] || mkdir -p $pkgdir

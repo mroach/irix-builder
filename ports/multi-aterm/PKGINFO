@@ -16,7 +16,7 @@ prepare() {
 build() {
   cd $pkgname-$pkgver
 
-  ./configure --prefix=/opt/local --host=$TARGET --with-xpm=$X11_PATH
+  ./configure --prefix=$pkgprefix --host=$TARGET --with-xpm=$X11_PATH
 
   make
 }

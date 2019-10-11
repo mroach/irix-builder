@@ -9,16 +9,16 @@ sha256sums=('ab5992a76b7ab2185b55f3aacc1b0df81132c947b3d594f82eb0b41cf219725f')
 
 build() {
   cd onig-$pkgver
-  ./configure --prefix=/opt/local --host=$TARGET
+  ./configure --prefix=$pkgprefix --host=$TARGET
   make
 }
 
 package() {
   cd onig-$pkgver
   make DESTDIR="$pkgdir" install
-  # install -dm755 "$pkgdir"/usr/share/doc
-  # cp -r doc "$pkgdir"/usr/share/doc/$pkgname
+  # install -dm755 "$STAGE_ROOT"/usr/share/doc
+  # cp -r doc "$STAGE_ROOT"/usr/share/doc/$pkgname
   # for licfile in COPYING INSTALL; do
-  #   install -Dm644 $licfile "$pkgdir"/usr/share/licenses/$pkgname/$licfile
+  #   install -Dm644 $licfile "$STAGE_ROOT"/usr/share/licenses/$pkgname/$licfile
   # done
 }
