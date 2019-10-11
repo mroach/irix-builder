@@ -7,6 +7,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 WORKDIR_ROOT=/opt/workdir
 PKG_OUT_ROOT=/opt/pkg
 STAGE_ROOT=/opt/stage
+PORTS_DIR=${PORTS_DIR:-/opt/ports}
 
 export MAKEFLAGS="-j$(nproc)"
 export STRIPPROG="$TARGET-strip"
@@ -46,7 +47,7 @@ echo_error() {
 
 [ -z "$pkg" ] && (usage; exit 1)
 
-pkginfo_path=$DIR/ports/$pkg/PKGINFO
+pkginfo_path=$PORTS_DIR/$pkg/PKGINFO
 
 if [ ! -f "$pkginfo_path" ]; then
 	cat <<-EOF
