@@ -1,0 +1,22 @@
+pkgname=zlib
+pkgver=1.2.11
+pkgdesc="data compression library"
+url=https://www.zlib.net
+sources=("https://zlib.net/$pkgname-${pkgver}.tar.gz")
+md5sums=(1c9f62f0778697a09d36121ead88e08e)
+
+build() {
+  cd $pkgname-$pkgver
+
+  # the zlib confiure script detects cross-compilation by the CC env var
+  ./configure --prefix=$pkgprefix
+
+  make
+}
+
+package() {
+  cd "$pkgname-$pkgver"
+
+  # the 'install' command isn't using the correct strip program for cross-compilation
+  make DESTDIR="$pkgdir" install
+}
