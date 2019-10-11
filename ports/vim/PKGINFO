@@ -4,6 +4,11 @@ pkgdesc='Vi Improved, a highly configurable, improved version of the vi text edi
 url='https://www.vim.org'
 sources=(https://github.com/vim/vim/archive/v${pkgver}/${pkgname}-${pkgver}.tar.gz)
 sha256sums=(ad862642452dd32ff8290019fbe559c6108dadfab602a96a6568070fe7cb61e6)
+read -r -d '' broken <<'EOF'
+Doesn't compile due to a problem with trying to do a test compile to detect
+wchar_t. Some configure scripts don't work well with cross-compilation and can
+be fixed by commenting-out code or modifying it.
+EOF
 
 build() {
   cd $pkgname-$pkgver
