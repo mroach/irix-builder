@@ -132,15 +132,15 @@ verify_source() {
 	if [ -v sha512sums ]; then
 		sum="${sha512sums[$1]}"
 		echo_debug "Verifying SHA-512 checksum $sum for $filename"
-		echo "$sum  $filename" | shasum -a512 -c
+		echo "$sum  $filename" | shasum -a512 -q -c
 	elif [ -v sha256sums ]; then
 		sum="${sha256sums[$1]}"
 		echo_debug "Verifying SHA-256 checksum $sum for $filename"
-		echo "$sum  $filename" | shasum -a256 -c
+		echo "$sum  $filename" | shasum -a256 -q -c
 	elif [ -v sha1sums ]; then
 		sum="${sha1sums[$1]}"
 		echo_debug "Verifying SHA-1 checksum $sum for $filename"
-		echo "$sum  $filename" | shasum -a1 -c
+		echo "$sum  $filename" | shasum -a1 -q -c
 	elif [ -v md5sums ]; then
 		sum="${md5sums[$1]}"
 		echo_debug "Verifying MD5 checksum $sum for $filename"
@@ -181,7 +181,7 @@ quiet_run() {
 			echo "Last lines of log $logfile:"
 			echo "--------------------------------------------------"
 			echo "... [$(wc -l $logfile | awk '{print $1}') lines]"
-			tail -n10 $logfile
+			tail -n20 $logfile
 			return 1
 		}
 	fi
@@ -234,4 +234,5 @@ mk_pkginfo > $pkgdir/.PKGINFO
 # the xform arg strips the leading ./ from paths in the archive
 tar -czf $pkgpath --xform s:'./':: -C $pkgdir .
 
-echo_info "Done!"
+echo_success "Built $pkgname!"
+echo_success "Done"
