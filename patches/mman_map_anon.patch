@@ -1,0 +1,24 @@
+Several modern application require the MAP_ANON or MAP_ANONYMOUS flag for
+allocating memory. IRIX does not provide this flag, but thanks to research
+by community member @Raion, we know that the MAP_SGI_ANYADDR flag provides
+the same or functionally equivalent functionality.
+
+This patch updates <sys/mman.h> to point these two flags at MAP_SGI_ANYADDR
+
+--- /opt/irix-root/usr/include/sys/mman.h	2019-10-11 19:20:21.229515000 +0000
++++ /opt/irix-root/usr/include/sys/mman.h	2019-10-11 19:17:22.808382000 +0000
+@@ -43,6 +43,14 @@
+ 				 * and 0x40000000
+ 				 */ 
+ 
++/* Add compatibility with modern software that requires MAP_ANON(YMOUS).
++ * Community member @Raion identified MAP_SGI_ANYADDR to be functionally
++ * equivalent or at least functionally compatible with MAP_ANON(YMOUS).
++ */
++#define MAP_ANON        0x1000  /* same as MAP_SGI_ANYADDR */
++#define MAP_ANONYMOUS   0x1000  /* same as MAP_SGI_ANYADDR */
++/* End of custom patch */
++
+ #define PROT_NONE	0x0	/* page can not be accessed */
+ #define PROT_READ	0x1	/* page can be read */
+ #define PROT_WRITE	0x2	/* page can be written */

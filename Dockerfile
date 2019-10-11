@@ -107,6 +107,9 @@ RUN mkdir /opt/gcc/mips-sgi-irix6.5 && \
     cp /opt/src/gcc-build/mips-sgi-irix6.5/libstdc++-v3/src/.libs/libstdc++.a \
        /opt/gcc/lib/gcc/mips-sgi-irix6.5/4.7.4/.
 
+COPY patches/mman_map_anon.patch .
+RUN patch -d/ -p0 < mman_map_anon.patch && \
+    rm mman_map_anon.patch
 
 RUN mkdir -p /opt/pkg \
              /opt/cache
