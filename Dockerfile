@@ -21,14 +21,10 @@ RUN apt-get update && \
       libmpfr-dev \
       libmpc-dev \
       texinfo  \
-      unzip \
       autoconf \
       gettext \
       curl \
-      ca-certificates \
-      ripgrep \
-      less \
-      vim && \
+      ca-certificates && \
     apt-get clean
 
 WORKDIR /opt
@@ -38,8 +34,7 @@ RUN mkdir /opt/src
 RUN mkdir -p /opt/src/gcc-build \
              /opt/gcc/mips-sgi-irix6.5 \
              /opt/irix-root \
-             /opt/src/binutils \
-             /opt/pkg
+             /opt/src/binutils
 
 RUN archive=$(basename $IRIX_ROOT_URL); \
     curl -LO $IRIX_ROOT_URL && \
@@ -112,7 +107,11 @@ RUN mkdir /opt/gcc/mips-sgi-irix6.5 && \
     cp /opt/src/gcc-build/mips-sgi-irix6.5/libstdc++-v3/src/.libs/libstdc++.a \
        /opt/gcc/lib/gcc/mips-sgi-irix6.5/4.7.4/.
 
-ENV PATH=/opt/binutils/bin:/opt/gcc/bin:$PATH \
+
+RUN mkdir -p /opt/pkg \
+             /opt/cache
+
+ENV PATH=/opt/binutils/bin:/opt/gcc/bin:/opt/bin:$PATH \
     CC="/opt/gcc/bin/mips-sgi-irix6.5-gcc" \
     CXX="/opt/gcc/bin/mips-sgi-irix6.5-g++" \
     CFLAGS="-B/opt/binutils/bin/mips-sgi-irix6.5- --sysroot=/opt/irix-root" \
@@ -122,3 +121,16 @@ ENV PATH=/opt/binutils/bin:/opt/gcc/bin:$PATH \
     X11_PATH=/opt/motif
 
 ENV TARGET_PREFIX=$PREFIX/$TARGET
+
+
+FROM builder-base AS builder-dev
+
+RUN apt-get install -y --no-install-recommends \
+      ripgrep \
+      less \
+      unzip \
+      procps \
+      vim && \
+    apt-get clean
+
+CMD ["bash"]
