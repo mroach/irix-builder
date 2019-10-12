@@ -66,8 +66,9 @@ echo_info "Loading $pkginfo_path"
 source $pkginfo_path
 
 if [ -n "$broken" ]; then
-	echo_info "Package is marked as broken. Aborting build"
-	echo $broken | sed 's/^/  '
+	echo_info "Package is marked as broken. Aborting build. Reason:"
+	echo
+	echo "$broken" | sed 's/^/    /'
 	exit 0
 fi
 
