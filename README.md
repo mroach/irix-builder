@@ -1,4 +1,4 @@
-# IRIX Builder and IRIX Supplemental Package Manager (ispm)
+# IRIX Builder and IRIX Package Manager (ipm)
 
 This project aims to cross-compile software for IRIX and create packages
 that can easily be installed on an IRIX workstation with a simple package manager.
