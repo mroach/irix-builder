@@ -167,10 +167,10 @@ mk_pkginfo() {
 
 quiet_run() {
 	if [ "$verbose" = true ]; then
-		"$@"
+		("$@")
 	else
 		logfile=$(tempfile)
-		"$@" >>$logfile 2>&1 || {
+		("$@") >>$logfile 2>&1 || {
 			echo "command failed: $@"
 			echo "Last lines of log $logfile:"
 			echo "--------------------------------------------------"
@@ -188,7 +188,7 @@ if [ -v depends ]; then
 			echo_debug "Dependency '$dep' is already built"
 		else
 			echo_info "Building dependency '$dep'"
-			$SCRIPTPATH $dep $raw_opts
+			($SCRIPTPATH $dep $raw_opts)
 		fi
 	done
 fi
