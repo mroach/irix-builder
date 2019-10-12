@@ -16,15 +16,11 @@ export MAKEFLAGS="-j$(nproc)"
 export STRIPPROG="$TARGET-strip"
 
 pkg=$1; shift
-clean=false
 verbose=false
 raw_opts="$@"
 
 for arg in "$@"; do
 	case $arg in
-		--clean)
-			clean=true
-			shift ;;
 		--verbose|-v)
 			verbose=true
 			shift ;;
@@ -98,10 +94,7 @@ is_dep_installed() {
 	[ -n "$(find_dep_path $1)" ] && echo "yes" || echo "no"
 }
 
-if [ "$clean" = true ]; then
-	echo_info "Cleaning $workdir and $pkgdir"
-	[ -d $workdir ] && rm -rf $workdir
-fi
+[ -d $workdir ] && rm -rf $workdir
 
 # always purge the staging dir, otherwise multiple builds of the same package
 # could produce unexpected files, such as if you enable or disable features
