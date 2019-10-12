@@ -111,6 +111,13 @@ COPY patches/mman_map_anon.patch .
 RUN patch -d/ -p0 < mman_map_anon.patch && \
     rm mman_map_anon.patch
 
+# Install package that some packages need for for building. Adding them here
+# rather than the top of the file reduces image rebuild time as we add tools.
+RUN apt-get install -y --no-install-recommends \
+      libtool \
+      python2 \
+      unzip
+
 RUN mkdir -p /opt/pkg \
              /opt/cache
 
@@ -131,7 +138,6 @@ FROM builder-base AS builder-dev
 RUN apt-get install -y --no-install-recommends \
       ripgrep \
       less \
-      unzip \
       procps \
       vim && \
     apt-get clean
