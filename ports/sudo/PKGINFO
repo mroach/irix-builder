@@ -14,8 +14,9 @@ build() {
   ./configure \
     --host=$TARGET \
     --prefix=$pkgprefix \
-    --sbindir=$pkgprefix/usr/bin \
-    --libexecdir=$pkgprefix/usr/lib \
+    --sysconfdir=$pkgprefix/etc \
+    --sbindir=$pkgprefix/sbin \
+    --libexecdir=$pkgprefix/libexec \
     --with-rundir=$pkgprefix/run/sudo \
     --with-vardir=$pkgprefix/var/db/sudo \
     --with-logfac=auth \
@@ -35,14 +36,7 @@ package() {
   cd "$pkgname-$pkgver"
   make DESTDIR="$pkgdir" install
 
-  # # Remove sudoers.dist; not needed since pacman manages updates to sudoers
-  # rm "$STAGE_ROOT/etc/sudoers.dist"
-
-  # # Remove /run/sudo directory; we create it using systemd-tmpfiles
-  # rmdir "$STAGE_ROOT/run/sudo"
-  # rmdir "$STAGE_ROOT/run"
-
-  # install -Dm644 "$srcdir/sudo.pam" "$STAGE_ROOT/etc/pam.d/sudo"
-
-  # install -Dm644 doc/LICENSE "$STAGE_ROOT/usr/share/licenses/sudo/LICENSE"
+  # remote empty structure on the root. usr/local/libexec/sudo
+  # bug in the configure or Makefile?
+  rm -rf $pkgdir/usr
 }
