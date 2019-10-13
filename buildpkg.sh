@@ -115,34 +115,33 @@ extract() {
 		*.zip)
 			unzip $1 ;;
 		*)
-			echo_error "Don't know how to extract $1"
-			return 1 ;;
+			echo_debug "Not extracting unknown archive type $1" ;;
 	esac
 }
 
 verify_source() {
 	local sum=""
+	local index=$1
 	local filename=$2
-	if [ -v sha512sums ]; then
-		sum="${sha512sums[$1]}"
-		echo_debug "Verifying SHA-512 checksum $sum for $filename"
-		echo "$sum  $filename" | shasum -a512 -q -c
-	elif [ -v sha256sums ]; then
-		sum="${sha256sums[$1]}"
-		echo_debug "Verifying SHA-256 checksum $sum for $filename"
-		echo "$sum  $filename" | shasum -a256 -q -c
-	elif [ -v sha1sums ]; then
-		sum="${sha1sums[$1]}"
-		echo_debug "Verifying SHA-1 checksum $sum for $filename"
-		echo "$sum  $filename" | shasum -a1 -q -c
-	elif [ -v md5sums ]; then
-		sum="${md5sums[$1]}"
-		echo_debug "Verifying MD5 checksum $sum for $filename"
-		echo "$sum  $filename" | md5sum -c
-	else
-		echo_error "No checksums defined?"
-		return 1
+
+	for type in sha{1,256,512} md5; do
+		local varname=${type}sums
+		if [ -v $varname ]; then
+			sum=${!varname[$index]}
+			break
+		fi
+	done
+
+	if [ -z "$sum" ]; then
+		echo_warn "No checksums found"
+		return 0
+	elif [ "$sum" = "SKIP" ]; then
+		echo_debug "Skipping validation of $filename"
+		return 0
 	fi
+
+	echo_debug "Verifying $type checksum $sum for $filename"
+	echo "$sum  $filename" | ${type}sum --check --quiet
 }
 
 stage_size() {
@@ -202,8 +201,8 @@ if [ -v depends ]; then
 fi
 
 for findex in "${!sources[@]}"; do
-	url="${sources[$findex]}"
-	archive=$(basename "$url")
+	source="${sources[$findex]}"
+	archive=$(basename "$source")
 	archive_path=$pkgcache/$archive
 	do_download="yes"
 
@@ -213,8 +212,17 @@ for findex in "${!sources[@]}"; do
 	fi
 
 	if [ $do_download == "yes" ]; then
-		echo_info "Fetching source $url"
-		curl -# -L -o $archive_path "$url"
+		case "$source" in
+			http://*|https://*|ftp://*)
+				echo_info "Fetching source $source"
+				curl -# -L -o $archive_path "$source"
+				;;
+			*)
+				echo_info "Copying local file $source"
+				cp $PORTS_DIR/$pkgname/$source $workdir/.
+				;;
+		esac
+
 		verify_source $findex $archive_path
 	fi
 
