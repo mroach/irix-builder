@@ -205,7 +205,7 @@ if [ -v depends ]; then
 			echo_debug "Dependency '$dep' is already built"
 		else
 			echo_info "Building dependency '$dep'"
-			($SCRIPTPATH $dep $raw_opts)
+			$SCRIPTPATH $dep $raw_opts
 		fi
 
 		# assume the dependency is needed for build time, so add its include and
