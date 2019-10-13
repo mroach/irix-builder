@@ -1,6 +1,7 @@
 pkgname=readline
 pkgver=8.0
 pkgdesc="GNU readline"
+url="https://tiswww.case.edu/php/chet/readline/rltop.html"
 licenses=('GPL')
 depends=(ncurses)
 provides=('libhistory.so' 'libreadline.so')
