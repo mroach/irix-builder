@@ -94,7 +94,6 @@ RUN export AS_FOR_TARGET="mips-sgi-irix6.5-as" \
                            --disable-nls \
                            --enable-languages=c,c++ && \
     make -j $(nproc) && make install && \
-    rm -rf /opt/src/gcc && \
     rm -rf /opt/gcc/mips-sgi-irix6.5
 
 RUN mkdir /opt/gcc/mips-sgi-irix6.5 && \
