@@ -125,8 +125,13 @@ RUN mkdir -p /opt/pkg \
 COPY buildpkg.sh /opt/bin/buildpkg
 
 ENV PATH=/opt/binutils/bin:/opt/gcc/bin:/opt/bin:$PATH \
-    CC="/opt/gcc/bin/mips-sgi-irix6.5-gcc" \
-    CXX="/opt/gcc/bin/mips-sgi-irix6.5-g++" \
+    AR="mips-sgi-irix6.5-ar" \
+    AS="mips-sgi-irix6.5-as" \
+    CC="mips-sgi-irix6.5-gcc" \
+    CXX="mips-sgi-irix6.5-g++" \
+    RANLIB="mips-sgi-irix6.5-ranlib" \
+    STRIP="mips-sgi-irix6.5-strip" \
+    LD="mips-sgi-irix6.5-ld" \
     CFLAGS="-B/opt/binutils/bin/mips-sgi-irix6.5- --sysroot=/opt/irix-root" \
     CXXFLAGS="-B/opt/binutils/bin/mips-sgi-irix6.5- --sysroot=/opt/irix-root" \
     TARGET=mips-sgi-irix6.5 \
