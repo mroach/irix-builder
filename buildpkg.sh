@@ -50,10 +50,10 @@ echo_success() {
 
 [ -z "$pkg" ] && (usage; exit 1)
 
-pkginfo_path=$PORTS_DIR/$pkg/PKGINFO
+pkgbuild_file=$PORTS_DIR/$pkg/PKGBUILD
 
-if [ ! -f "$pkginfo_path" ]; then
-	echo_error Could not find build script for '$pkg' at $pkginfo_path
+if [ ! -f "$pkgbuild_file" ]; then
+	echo_error "Could not find build script for '$pkg' at $pkgbuild_file"
 	exit 1
 fi
 
@@ -62,8 +62,8 @@ check() { return 0; }
 depends=()
 broken=""
 
-echo_info "Loading $pkginfo_path"
-source $pkginfo_path
+echo_info "Loading $pkgbuild_file"
+source $pkgbuild_file
 
 if [ -n "$broken" ]; then
 	echo_info "Package is marked as broken. Aborting build. Reason:"
