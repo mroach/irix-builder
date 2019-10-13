@@ -1,0 +1,19 @@
+pkgname=libtool
+pkgver=2.4.6
+pkgdesc="A generic library support script"
+url="https://www.gnu.org/software/libtool"
+license=('GPL3')
+depends=(m4)
+sources=(http://ftp.gnu.org/gnu/libtool/$pkgname-$pkgver.tar.gz)
+sha1sums=(25b6931265230a06f0fc2146df64c04e5ae6ec33)
+
+build() {
+  cd $pkgname-$pkgver
+  ./configure --prefix=$pkgprefix --host=$TARGET
+  make
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="$pkgdir" install
+}
