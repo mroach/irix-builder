@@ -122,7 +122,7 @@ RUN mkdir -p /opt/pkg \
              /opt/cache \
              /opt/bin
 
-COPY buildpkg /opt/bin/buildpkg
+COPY buildpkg.sh /opt/bin/buildpkg
 
 ENV PATH=/opt/binutils/bin:/opt/gcc/bin:/opt/bin:$PATH \
     CC="/opt/gcc/bin/mips-sgi-irix6.5-gcc" \
