@@ -135,10 +135,14 @@ verify_source() {
 	local index=$1
 	local filename=$2
 
+	echo_debug "Verifying source index=$index filename=$filename"
+
 	for type in sha{1,256,512} md5; do
 		local varname=${type}sums
 		if [ -v $varname ]; then
-			sum=${!varname[$index]}
+			sums="${varname}[@]"
+			sums=(${!sums})
+			sum=${sums[$index]}
 			break
 		fi
 	done
@@ -147,11 +151,11 @@ verify_source() {
 		echo_warn "No checksums found"
 		return 0
 	elif [ "$sum" = "SKIP" ]; then
-		echo_debug "Skipping validation of $filename"
+		echo_info "Skipping validation of $filename"
 		return 0
 	fi
 
-	echo_debug "Verifying $type checksum $sum for $filename"
+	echo_info "Verifying $type checksum $sum for $filename"
 	echo "$sum  $filename" | ${type}sum --check --quiet
 }
 

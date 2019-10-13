@@ -5,7 +5,7 @@ url="https://www.gnu.org/software/m4"
 license=('GPL3')
 depends=(bash)
 sources=(https://ftp.gnu.org/gnu/m4/$pkgname-$pkgver.tar.xz getprogname.patch)
-md5sums=(730bb15d96fffe47e148d1e09235af82 7947bc68215c5954ebc80075f2d38712)
+md5sums=('730bb15d96fffe47e148d1e09235af82' 'SKIP')
 
 prepare() {
   cd $pkgname-$pkgver
