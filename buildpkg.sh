@@ -15,37 +15,48 @@ PORTS_DIR=${PORTS_DIR:-/opt/ports}
 export MAKEFLAGS="-j$(nproc)"
 export STRIPPROG="$TARGET-strip"
 
+echo_info() {
+	echo -e "\e[34m==>\e[0m \e[1m$@\e[0m" >&2
+}
+echo_debug() {
+	echo -e "\e[2m==> $@\e[0m" >&2
+}
+echo_warn() {
+  echo -e "\e[33m==>\e[0m \e[1m$@\e[0m" >&2
+}
+echo_error() {
+	echo -e "\e[91m==>\e[0m \e[21m$@\e[0m" >&2
+}
+echo_success() {
+	echo -e "\e[92m==>\e[0m \e[1m$@\e[0m" >&2
+}
+
 pkg=$1; shift
 verbose=false
 raw_opts="$@"
+remaining_args=()
 
 for arg in "$@"; do
 	case $arg in
 		--verbose|-v)
 			verbose=true
-			shift ;;
+			shift
+			;;
 		*)
-			echo "Discarded arguments: $@" ;;
+			remaining_args+=($1)
+			shift
+			;;
 	esac
 done
+
+if [ ${#remaining_args[@]} -gt 0 ]; then
+	echo_warn "Unused arguments: ${remaining_args[*]}"
+fi
 
 usage() {
 	cat <<-EOF
 	Usage: $0 <pkgname>
 	EOF
-}
-
-echo_info() {
-	echo -e "\e[34m==>\e[0m \e[1m$@\e[0m"
-}
-echo_debug() {
-	echo -e "\e[2m==> $@\e[0m"
-}
-echo_error() {
-	echo -e "\e[91m==>\e[0m \e[21m$@\e[0m"
-}
-echo_success() {
-	echo -e "\e[92m==>\e[0m \e[1m$@\e[0m"
 }
 
 [ -z "$pkg" ] && (usage; exit 1)
