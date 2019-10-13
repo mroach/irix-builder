@@ -1,0 +1,58 @@
+pkgname=bzip2
+pkgver=1.0.8
+pkgdesc="A high-quality data compression program"
+license=('custom')
+url="https://sourceware.org/bzip2/"
+sources=(https://sourceware.org/pub/bzip2/$pkgname-$pkgver.tar.gz)
+sha256sums=('ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269')
+
+build() {
+  cd $pkgname-$pkgver
+
+  make -f Makefile-libbz2_so \
+        PREFIX=$pkgprefix \
+        CC="$CC $CFLAGS ${LDFLAGS-}" AR="${AR}" RANLIB="${RANLIB}"
+
+  make bzip2 bzip2recover \
+       PREFIX=$pkgprefix \
+       CC="$CC $CFLAGS ${LDFLAGS-}" AR="${AR}" RANLIB="${RANLIB}"
+}
+
+package() {
+  cd $pkgname-$pkgver
+
+  # we're not going to use `make install`
+  # it doesn't support the concept of DESTDIR vs PREFIX so the symlinks it
+  # creates become absolute. since we install to a stage dir, that will
+  # mean broken links after archiving and deploying
+
+  local stagedir=$pkgdir/$pkgprefix
+
+  install -dm755 "$stagedir"/{bin,include,lib,share/man/man1}
+
+  install -m755 bzip2-shared "$stagedir"/bin/bzip2
+  install -m755 bzip2recover bzdiff bzgrep bzmore "$stagedir"/bin
+
+  (
+    cd $stagedir/bin
+    ln -s bzip2 bunzip2
+    ln -s bzip2 bzcat
+  )
+
+  install -m755 libbz2.so.* "$stagedir"/lib/.
+  (
+    cd $stagedir/lib
+    ln -s libbz2.so.$pkgver libbz2.so
+    ln -s libbz2.so.$pkgver libbz2.so.1
+  )
+
+  install -m644 bzlib.h "$stagedir"/include/
+
+  install -m644 bzip2.1 "$stagedir"/share/man/man1/
+  (
+    cd "$stagedir"/share/man/man1/
+    ln -s bzip2.1 bunzip2.1
+    ln -sf bzip2.1 bzcat.1
+    ln -sf bzip2.1 bzip2recover.1
+  )
+}
