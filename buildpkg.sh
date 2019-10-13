@@ -241,7 +241,7 @@ for findex in "${!sources[@]}"; do
 done
 
 echo_info "Preparing"
-quiet_run "prepare"; cd $workdir
+(quiet_run "prepare")
 
 echo_info "Building"
 (
