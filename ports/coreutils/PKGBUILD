@@ -10,8 +10,6 @@ depends=(openssl)
 build() {
   cd "$pkgname-$pkgver"
 
-  export CPPFLAGS="-I$(whereis_dep openssl)/include ${CPPFLAGS:-}"
-
   ./configure --prefix=$pkgprefix --libexecdir=$pkgprefix/lib --host=$TARGET \
               --with-openssl
 

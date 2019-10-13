@@ -181,6 +181,9 @@ quiet_run() {
 	fi
 }
 
+DEP_CPPFLAGS=()
+DEP_LDFLAGS=()
+
 if [ -v depends ]; then
 	for dep in "${depends[@]}"; do
 		dep_installed=$(is_dep_installed $dep)
@@ -190,6 +193,11 @@ if [ -v depends ]; then
 			echo_info "Building dependency '$dep'"
 			($SCRIPTPATH $dep $raw_opts)
 		fi
+
+		# assume the dependency is needed for build time, so add its include and
+		# lib dirs to the compiler flags so it can find them
+		DEP_CPPFLAGS+=("-I$(whereis_dep $dep)/include")
+		DEP_LDFLAGS+=("-L$(whereis_dep $dep)/lib")
 	done
 fi
 
@@ -217,10 +225,15 @@ echo_info "Preparing"
 quiet_run "prepare"; cd $workdir
 
 echo_info "Building"
-quiet_run "build"; cd $workdir
+(
+	export CPPFLAGS="${DEP_CPPFLAGS[@]} ${CPPFLAGS-}"
+	export LDFLAGS="${DEP_LDFLAGS[@]} ${LDFLAGS-}"
+
+	quiet_run "build"
+)
 
 echo_info "Staging install to $pkgdir"
-quiet_run "package"; cd $workdir
+(quiet_run "package")
 
 echo_info "Creating archive $pkgpath"
 mk_pkginfo > $pkgdir/.PKGINFO

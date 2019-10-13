@@ -19,8 +19,6 @@ build() {
                -DNON_INTERACTIVE_LOGIN_SHELLS)
 
   export CFLAGS="${CFLAGS} ${_bashconfig[@]}"
-  export LDFLAGS="-L$(whereis_dep readline)/lib"
-
 
   ./configure --prefix=$pkgprefix --host=$TARGET \
               --with-curses --enable-readline --with-installed-readline
