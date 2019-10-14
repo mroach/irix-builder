@@ -1,0 +1,24 @@
+
+pkgname=xz
+pkgver=5.2.4
+pkgdesc='Library and command line tools for XZ and LZMA compressed files'
+url='https://tukaani.org/xz/'
+licenses=('GPL' 'LGPL' 'custom')
+sources=(https://tukaani.org/xz/$pkgname-$pkgver.tar.xz)
+sha256sums=(9717ae363760dedf573dad241420c5fea86256b65bc21d2cf71b2b12f0544f4b)
+
+build() {
+  cd ${pkgname}-${pkgver}
+
+  # export CFLAGS="-std=gnu99 ${CFLAGS:-}"
+  # export LDFLAGS="-rpath=/opt/gcc/lib/gcc/$TARGET/4.7.4"
+  ./configure --prefix=$pkgprefix --host=$TARGET --disable-rpath
+
+  make
+}
+
+package() {
+  cd ${pkgname}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+}
