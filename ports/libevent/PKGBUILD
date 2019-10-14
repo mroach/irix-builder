@@ -1,0 +1,23 @@
+pkgname=libevent
+pkgver=2.1.11
+pkgdesc="An event notification library"
+url="https://libevent.org/"
+license=('BSD')
+depends=('openssl')
+sources=(https://github.com/libevent/libevent/releases/download/release-$pkgver-stable/$pkgname-$pkgver-stable.tar.gz)
+sha256sums=('a65bac6202ea8c5609fd5c7e480e6d25de467ea1917c08290c521752f147283d')
+
+build() {
+  cd ${pkgname}-${pkgver}-stable
+  ./autogen.sh
+  ./configure --prefix=$pkgprefix \
+              --host=$TARGET \
+              --sysconfdir=$pkgprefix/etc \
+              --disable-libevent-regress
+  make
+}
+
+package() {
+  cd ${pkgname}-${pkgver}-stable
+  make DESTDIR="${pkgdir}" install
+}
