@@ -85,6 +85,7 @@ fi
 
 workdir=$WORKDIR_ROOT/$pkgname/$pkgver
 pkgpath=$PKG_OUT_ROOT/$pkgname-$pkgver-$TARGET.pkg.tar.gz
+pkginfopath=$PKG_OUT_ROOT/$pkgname-$pkgver-$TARGET.PKGINFO
 pkgprefix=$PREFIX_ROOT/$pkgname/$pkgver
 pkgdir=$STAGE_ROOT/$pkgname
 pkgcache=$CACHE_DIR/$pkgname
@@ -259,7 +260,8 @@ echo_info "Staging install to $pkgdir"
 (quiet_run "package")
 
 echo_info "Creating archive $pkgpath"
-mk_pkginfo > $pkgdir/.PKGINFO
+mk_pkginfo > $pkginfopath
+cp $pkginfopath $pkgdir/.PKGINFO
 
 # the xform arg strips the leading ./ from paths in the archive
 tar -czf $pkgpath --xform s:'./':: -C $pkgdir .

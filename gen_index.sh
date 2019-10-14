@@ -1,15 +1,67 @@
 #!/bin/bash
 
-for f in pkg/*pkg.tar.gz; do
-  pkgfile=$(basename $f)
-  barepkgname=$(basename $pkgfile .pkg.tar.gz)
-  parts=(${barepkgname//-/ })
+[ -f pkg/index.db ] && rm pkg/index.db
+[ -f pkg/index.csv ] && rm pkg/index.csv
 
-  ix_version=${#parts[@]}-4
-  pkgver="${parts[$ix_version]}"
-  pkgname=$(echo "${parts[@]:0:$ix_version}" | sed 's/ /-/')
+sqlite3 pkg/index.db <<EOF
+create table packages (
+	name              varchar(100) primary key,
+	version           varchar(20) not null,
+	description       text,
+	home_url          varchar(400),
+	archive_file_name varchar(100),
+	acrhive_sha256    varchar(64)
+);
 
-  sha1=$(shasum -a1 $f | awk '{print $1}')
+create table depends (
+	package_name varchar(100) not null,
+	depends_on varchar(100) not null,
 
-  echo "$pkgname,$pkgver,$pkgfile,$sha1"
+	unique (package_name, depends_on),
+	foreign key (package_name) references packages (name)
+	foreign key (depends_on) references packages (name)
+);
+EOF
+
+get_field() {
+	grep -e "$2\b" $1 | cut -d= -f2- | awk '{$1=$1;print}'
+}
+
+sql_quote() {
+	val=$(echo "$*" | sed "s/'/''/")
+	echo "'$val'"
+}
+
+for f in pkg/*.PKGINFO; do
+	base=$(basename $f .PKGINFO)
+	pkgfile=${base}.pkg.tar.gz
+	parts=(${barepkgname//-/ })
+
+	pkgname=$(get_field $f pkgname)
+	pkgver=$(get_field $f pkgver)
+	pkgdesc=$(get_field $f pkgdesc)
+	pkgurl=$(get_field $f url)
+	sha256=$(sha256sum pkg/$pkgfile | cut -d" " -f1)
+
+	sqlite3 pkg/index.db <<-EOF
+	insert into packages values(
+		$(sql_quote $pkgname),
+		$(sql_quote $pkgver),
+		$(sql_quote $pkgdesc),
+		$(sql_quote $pkgurl),
+		$(sql_quote $pkgfile),
+		$(sql_quote $sha256)
+	)
+	EOF
+
+	for dep in $(get_field $f depend); do
+		sqlite3 pkg/index.db <<-EOF
+		insert into depends values (
+			$(sql_quote $pkgname),
+			$(sql_quote $dep)
+		)
+		EOF
+	done
+
+	echo "$pkgname,$pkgver,$pkgfile,$sha256" >> pkg/index.csv
 done

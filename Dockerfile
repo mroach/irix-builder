@@ -117,13 +117,15 @@ RUN patch -d/ -p0 < mman_map_anon.patch && \
 RUN apt-get install -y --no-install-recommends \
       libtool \
       python2 \
-      unzip
+      unzip \
+      sqlite3
 
 RUN mkdir -p /opt/pkg \
              /opt/cache \
              /opt/bin
 
 COPY buildpkg.sh /opt/bin/buildpkg
+COPY gen_index.sh /opt/bin/gen_index
 
 ENV PATH=/opt/binutils/bin:/opt/gcc/bin:/opt/bin:$PATH \
     AR="mips-sgi-irix6.5-ar" \
