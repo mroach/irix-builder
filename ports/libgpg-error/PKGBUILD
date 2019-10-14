@@ -1,0 +1,21 @@
+pkgname=libgpg-error
+pkgver=1.36
+pkgdesc="Support library for libgcrypt"
+url="https://www.gnupg.org"
+license=('LGPL')
+sources=(ftp://ftp.gnupg.org/gcrypt/libgpg-error/${pkgname}-${pkgver}.tar.bz2)
+sha1sums=('5245ce38b198cecd57775fb3c7b7328ec1a2a615')
+
+build() {
+  cd ${pkgname}-${pkgver}
+
+  # libgpg-error has specific header files for known platforms
+  # there's no mips-sgi-irix6.5, so mips-unknown-linux is close enough
+  ./configure --prefix=$pkgprefix --host=mips-unknown-linux
+  make
+}
+
+package() {
+  cd ${pkgname}-${pkgver}
+  make DESTDIR="${pkgdir}/" install
+}
