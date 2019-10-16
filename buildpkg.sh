@@ -12,6 +12,11 @@ PREFIX_ROOT=/opt/sw
 CACHE_DIR=/opt/cache
 PORTS_DIR=${PORTS_DIR:-/opt/ports}
 
+# For software that will want configuration and data to persist across versions,
+# they may need to know that location at build time (or to set sane defaults).
+SYSCONF_DIR=/opt/local/etc
+SYSSTATE_DIR=/opt/local/var
+
 export MAKEFLAGS="-j$(nproc)"
 export STRIPPROG="$TARGET-strip"
 
