@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eu
+
 [ -f pkg/index.db ] && rm pkg/index.db
 [ -f pkg/index.csv ] && rm pkg/index.csv
 
@@ -7,6 +9,7 @@ sqlite3 pkg/index.db <<EOF
 create table packages (
 	name              varchar(100) primary key,
 	version           varchar(20) not null,
+	build_revision		varchar(40) not null,
 	description       text,
 	home_url          varchar(400),
 	archive_file_name varchar(100),
@@ -32,13 +35,14 @@ sql_quote() {
 	echo "'$val'"
 }
 
-for f in pkg/*.PKGINFO; do
-	base=$(basename $f .PKGINFO)
+for f in pkg/*.pkginfo.txt; do
+	base=$(basename $f .pkginfo.txt)
 	pkgfile=${base}.pkg.tar.gz
 	parts=(${barepkgname//-/ })
 
 	pkgname=$(get_field $f pkgname)
 	pkgver=$(get_field $f pkgver)
+	buildrev=$(get_field $f buildrev)
 
 	echo -n "Adding $pkgname $pkgver"
 
@@ -51,6 +55,7 @@ for f in pkg/*.PKGINFO; do
 	insert into packages values(
 		$(sql_quote $pkgname),
 		$(sql_quote $pkgver),
+		$(sql_quote $buildrev),
 		$(sql_quote $pkgdesc),
 		$(sql_quote $pkgurl),
 		$(sql_quote $pkgfile),
@@ -69,7 +74,7 @@ for f in pkg/*.PKGINFO; do
 	done
 	echo -n "."
 
-	echo "$pkgname,$pkgver,$pkgfile,$sha256" >> pkg/index.csv
+	echo "$pkgname,$pkgver,$pkgfile,$sha256,$buildrev" >> pkg/index.csv
 	echo ".done"
 done
 
