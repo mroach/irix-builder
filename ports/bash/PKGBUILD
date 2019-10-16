@@ -21,7 +21,7 @@ build() {
   _bashconfig=(-DDEFAULT_PATH_VALUE=\'\"/usr/local/sbin:/usr/local/bin:/usr/bin\"\'
                -DSTANDARD_UTILS_PATH=\'\"/usr/bin\"\'
                -DSYS_BASHRC=\'\"$SYSCONF_DIR/bash.bashrc\"\'
-               -DSYS_BASH_LOGOUT=\'\"$SYSCONF_DIR/etc/bash.bash_logout\"\'
+               -DSYS_BASH_LOGOUT=\'\"$SYSCONF_DIR/bash.bash_logout\"\'
                -DNON_INTERACTIVE_LOGIN_SHELLS)
 
   export CFLAGS="${CFLAGS} ${_bashconfig[@]}"
