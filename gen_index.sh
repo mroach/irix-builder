@@ -39,9 +39,13 @@ for f in pkg/*.PKGINFO; do
 
 	pkgname=$(get_field $f pkgname)
 	pkgver=$(get_field $f pkgver)
+
+	echo -n "Adding $pkgname $pkgver"
+
 	pkgdesc=$(get_field $f pkgdesc)
 	pkgurl=$(get_field $f url)
 	sha256=$(sha256sum pkg/$pkgfile | cut -d" " -f1)
+	echo -n "."
 
 	sqlite3 pkg/index.db <<-EOF
 	insert into packages values(
@@ -53,6 +57,7 @@ for f in pkg/*.PKGINFO; do
 		$(sql_quote $sha256)
 	)
 	EOF
+	echo -n "."
 
 	for dep in $(get_field $f depend); do
 		sqlite3 pkg/index.db <<-EOF
@@ -62,6 +67,10 @@ for f in pkg/*.PKGINFO; do
 		)
 		EOF
 	done
+	echo -n "."
 
 	echo "$pkgname,$pkgver,$pkgfile,$sha256" >> pkg/index.csv
+	echo ".done"
 done
+
+echo "Done"
