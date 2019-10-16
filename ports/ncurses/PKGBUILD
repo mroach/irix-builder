@@ -20,5 +20,5 @@ package() {
   cd "$pkgname-$pkgver"
 
   # the 'install' command isn't using the correct strip program for cross-compilation
-  make DESTDIR="$pkgdir" INSTALL_PROG="\${INSTALL} --strip-program=$TARGET-strip" install
+  make DESTDIR="$pkgdir" INSTALL_PROG="\${INSTALL} --strip-program=$STRIPPROG" install
 }
