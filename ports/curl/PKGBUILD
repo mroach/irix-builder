@@ -23,6 +23,5 @@ build() {
 package() {
   cd "$pkgname-$pkgver"
 
-  # the 'install' command isn't using the correct strip program for cross-compilation
   make DESTDIR="$pkgdir" install
 }
