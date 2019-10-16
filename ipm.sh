@@ -10,6 +10,8 @@ WORKDIR_ROOT=/var/ipm/work
 LINK_LOCAL_DIR=/opt/local
 LINK_LIB_DIR=/opt/lib32
 
+IPM_MIRROR=${IPM_MIRROR-http://dl.mroach.com/irix}
+
 echo_debug() {
   [ "${verbose:-no}" = "no" ] && return 0
   echo "\033[2m==> $@\033[0m" >&2
@@ -26,6 +28,8 @@ echo_error() {
 echo_success() {
   echo "\033[92m==>\033[0m \033[1m$@\033[0m" >&2
 }
+
+echo_debug "Mirror is $IPM_MIRROR"
 
 ensure_env() {
   for d in $PKG_CACHE_DIR $WORKDIR_ROOT $LINK_LOCAL_DIR $INSTALL_DIR; do
@@ -52,7 +56,7 @@ fetch() {
   if [ -f $cachefile ]; then
     echo_info "Using cached file"
   else
-    url=http://dl.mroach.com/irix/pkg/$pkgfile
+    url=$IPM_MIRROR/pkg/$pkgfile
     echo_info "Fetching $url"
     /opt/local/bin/curl -# -o $cachefile $url
   fi
