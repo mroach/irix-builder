@@ -1,6 +1,9 @@
-#!/bin/sh
+#!/bin/ksh
 
 set -eu
+
+MIRROR_HOST=${MIRROR_HOST-dl.mroach.com}
+MIRROR_PATH=${MIRROR_PATH-/irix}
 
 if [ `whoami` != "root" ]; then
   echo "must be run as root" >&2
@@ -83,26 +86,34 @@ sub http_get {
 http_get( "$ARGV[0]", "$ARGV[1]", "$ARGV[2]", 1 );
 EOF
 
-chmod +x http_get.pl
+PATH=/opt/bin:$PATH
 
-./http_get.pl dl.mroach.com /irix/ipm.sh ipm.sh
+chmod +x http_get.pl
+mv http_get.pl /opt/bin/.
+
+echo "Fetching ipm"
+http_get.pl $MIRROR_HOST $MIRROR_PATH/ipm.sh ipm.sh
 chmod +x ipm.sh
 mv ipm.sh /opt/bin/ipm
 
-./http_get.pl dl.mroach.com /irix/pkg/index.csv index.csv
+echo "Fetching latest package index"
+http_get.pl $MIRROR_HOST $MIRROR_PATH/pkg/index.csv index.csv
 mv index.csv /opt/var/ipm/.
 
 # pre-fill the cache with the packages we need to install curl
-for dep in curl openssl zlib; do
+echo "Fetching base dependencies"
+for dep in curl openssl zlib sqlite; do
   file=`grep "^$dep," /opt/var/ipm/index.csv | cut -d, -f3`
-  ./http_get.pl dl.mroach.com /irix/pkg/$file $file
+  http_get.pl $MIRROR_HOST $MIRROR_PATH/pkg/$file $file
   mv $file /var/cache/ipm/.
 done
 
-./http_get.pl dl.mroach.com /irix/libgcc_s.so.1 libgcc_s.so.1
+http_get.pl $MIRROR_HOST $MIRROR_PATH/libgcc_s.so.1 libgcc_s.so.1
 mv libgcc_s.so.1 /opt/lib32/.
 
-/opt/bin/ipm install curl
+echo "Installing curl and sqlite"
+ipm install curl
+ipm install sqlite
 
 cat <<-'EOF'
 
@@ -112,5 +123,3 @@ variables to easily use IPM:
     PATH=$PATH:/opt/bin:/opt/local/bin
     MANPATH=${MANPATH-}:/opt/local/share/man
 EOF
-
-rm http_get.pl
