@@ -229,16 +229,54 @@ install() {
   echo_success "Installed $pkgname $pkgver"
 }
 
+sha1sum() {
+  openssl sha1 $1 | cut -d' ' -f2
+}
+
+maybe_update_file() {
+  url=$1
+  destfile=$2
+  filename=`basename $2`
+  tmpfile=/tmp/${filename}.new
+
+  echo_info "Updating from $url"
+  autocurl -# -o $tmpfile $url
+
+  newver=`sha1sum $tmpfile`
+
+  if [ "$newver" = `sha1sum $destfile` ]; then
+    echo_warn "$destfile is already the latest version"
+    return 0
+  fi
+
+  mv $tmpfile $destfile
+  echo_success "Updated $destfile to version $newver"
+}
+
+update() {
+  maybe_update_file $IPM_MIRROR/pkg/index.db /opt/var/ipm/index.db
+}
+
+self_update() {
+  maybe_update_file $IPM_MIRROR/ipm.sh /opt/bin/ipm
+  chmod +x /opt/bin/ipm
+}
+
 usage() {
 cat <<EOF
 usage: ipm <command> [args]
 
 commands:
-  install <pkgname>        install a package and its dependencies
-  fetch <pkgname>          only fetch a package tarball
-  link <pkgname>           find files provided by the package and link into common dirs
-  doctor                   ensure the environment is ok (dirs exist, etc)
-  installed-ver <pkgname>  get info about installed package
+  doctor                    ensure the environment is ok (dirs exist, etc)
+  fetch <pkgname>           only fetch a package tarball
+  help                      show this usage info
+  install <pkgname>         install a package and its dependencies
+  link <pkgname>            find files provided by the package and link into common dirs
+  show-installed <pkgname>  get info about installed package
+  self-update               update this program to the latest version
+  uninstall <pkgname>       uninstall a package. remove all symlinks then delete
+  unlink <pkgname>          remove all symlinks to the package
+  update                    update the package index. happens automatically before install
 EOF
 }
 
@@ -274,8 +312,12 @@ case "$command" in
   fetch)
     fetch $1
     ;;
+  update)
+    update
+    ;;
   install)
     pkgname=$1; shift
+    update
     install $pkgname
     ;;
   uninstall)
@@ -294,6 +336,9 @@ case "$command" in
     ;;
   show-installed)
     installed_pkg_ver $1 ;;
+  self-update)
+    self_update
+    ;;
   *)
     echo "Invalid command '$command'"
     exit 1
