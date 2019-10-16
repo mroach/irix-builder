@@ -24,6 +24,7 @@ echo_info() {
 	echo -e "\e[34m==>\e[0m \e[1m$@\e[0m" >&2
 }
 echo_debug() {
+	[ "$verbose" = false ] && return 0
 	echo -e "\e[2m==> $@\e[0m" >&2
 }
 echo_warn() {
