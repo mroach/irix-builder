@@ -14,11 +14,11 @@ build() {
   ./configure \
     --host=$TARGET \
     --prefix=$pkgprefix \
-    --sysconfdir=$pkgprefix/etc \
+    --sysconfdir=$SYSCONF_DIR \
     --sbindir=$pkgprefix/sbin \
     --libexecdir=$pkgprefix/libexec \
-    --with-rundir=$pkgprefix/run/sudo \
-    --with-vardir=$pkgprefix/var/db/sudo \
+    --with-rundir=$SYSSTATE_DIR/run/sudo \
+    --with-vardir=$SYSSTATE_DIR/db/sudo \
     --with-logfac=auth \
     --with-env-editor \
     --with-passprompt="[sudo] password for %p: " \
