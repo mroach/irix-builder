@@ -91,7 +91,7 @@ fi
 
 workdir=$WORKDIR_ROOT/$pkgname/$pkgver
 pkgpath=$PKG_OUT_ROOT/$pkgname-$pkgver-$TARGET.pkg.tar.gz
-pkginfopath=$PKG_OUT_ROOT/$pkgname-$pkgver-$TARGET.PKGINFO
+pkginfopath=$PKG_OUT_ROOT/$pkgname-$pkgver-$TARGET.pkginfo.txt
 pkgprefix=$PREFIX_ROOT/$pkgname/$pkgver
 pkgdir=$STAGE_ROOT/$pkgname
 pkgcache=$CACHE_DIR/$pkgname
