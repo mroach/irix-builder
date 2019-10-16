@@ -1,0 +1,31 @@
+pkgname=ldns
+pkgver=1.7.1
+pkgdesc='Fast DNS library supporting recent RFCs'
+url='https://www.nlnetlabs.nl/projects/ldns/'
+license=('custom:BSD')
+depends=('openssl')
+sources=("https://www.nlnetlabs.nl/downloads/${pkgname}/${pkgname}-${pkgver}.tar.gz")
+sha256sums=('8ac84c16bdca60e710eea75782356f3ac3b55680d40e1530d7cea474ac208229')
+
+build() {
+  cd "${pkgname}-${pkgver}"
+
+  # Until we can upgrade to OpenSSL >= 1.1, disable DANE verification
+
+  ./configure --host=$TARGET \
+              --prefix=$pkgprefix \
+              --sysconfdir=$SYSCONF_DIR \
+              --localstatedir=$SYSSTATE_DIR \
+              --disable-rpath \
+              --with-drill \
+              --disable-dane-verify \
+              --with-ssl=$(whereis_dep openssl)
+
+  make
+}
+
+package() {
+  cd "${pkgname}-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install
+}
