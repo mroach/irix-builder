@@ -170,6 +170,12 @@ stage_size() {
 	du -sb $pkgdir | awk '{print $1}'
 }
 
+# To help detect when a package was rebuilt without changes, generate a revision
+# based on the contents of the port's directory. If none of the file contents.
+build_revision() {
+	tar c $PORTS_DIR/$1 | sha1sum | awk '{print $1}'
+}
+
 mk_pkginfo() {
 	cat <<-EOF
 	pkgname = $pkgname
@@ -177,6 +183,7 @@ mk_pkginfo() {
 	pkgdesc = $pkgdesc
 	url = $url
 	builddate = $(date +%s)
+	buildrev = $(build_revision $pkgname)
 	size = $(stage_size)
 	packager = $0
 	arch = $TARGET
