@@ -1,0 +1,31 @@
+# This image is meant to be a decent simulator of an IRIX system for testing
+# bootstrap.sh and ipm.sh
+#
+# This allows testing installations, self-updates, uninstalls.
+FROM debian:jessie-slim
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      nginx \
+      perl \
+      curl \
+      ksh \
+      openssl
+
+RUN rm -rf /var/www/html/* && \
+    mkdir -p /var/www/html/irix/pkg && \
+    mkdir -p /opt/local/bin && \
+    mkdir -p /opt/lib32 && \
+    ln -s /bin/zcat /bin/gzcat
+
+RUN curl -o /var/www/html/irix/libgcc_s.so.1 http://dl.mroach.com/irix/libgcc_s.so.1
+
+WORKDIR /root
+
+COPY bootstrap.sh .
+
+ENV MIRROR_HOST=localhost \
+    MIRROR_PATH=/irix \
+    IPM_MIRROR=http://localhost/irix
+
+CMD ["bash"]

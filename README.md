@@ -75,6 +75,33 @@ Once you're at a shell, you can start building packages:
 buildpkg curl
 ```
 
+#### Testing ipm
+
+It's a good idea to test changes to `bootstrap.sh` and `ipm.sh` before pushing
+to a mirror. For that, use the `Dockerfile.ipmtest` image. It tries to
+approximate an IRIX system.
+
+> TODO: Install older versions of Perl, sh, openssl to be closer to IRIX
+
+```shell
+docker build -t test-server -f Dockerfile.ipmtest .
+
+docker run --rm -it -v $PWD/pkg:/var/www/html/irix/pkg \
+                    -v $PWD/ipm.sh:/var/www/html/irix/ipm.sh \
+                    -v $PWD/bootstrap.sh:/root/bootstrap.sh \
+                    test-server bash
+```
+
+Example of testing out a self-update and installing a package:
+
+```shell
+service nginx start
+
+./bootstrap.sh
+/opt/bin/ipm self-update
+/opt/bin/ipm install bash
+```
+
 ## ipm philosophy
 
 ipm aims to be simple and non-destructive to your IRIX OS. Installing software
