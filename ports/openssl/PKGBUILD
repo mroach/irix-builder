@@ -21,8 +21,7 @@ build() {
   cd "$pkgname-$_ver"
 
   ./Configure irix-mips3-gcc shared \
-              --prefix=$pkgprefix \
-              --openssldir=$pkgdir$pkgprefix/etc/ssl
+              --openssldir=$pkgprefix
 
   make
 }
@@ -30,5 +29,5 @@ build() {
 package() {
   cd "$pkgname-$_ver"
 
-  make INSTALLTOP="$pkgdir$pkgprefix" install
+  make INSTALL_PREFIX="$pkgdir" install
 }
