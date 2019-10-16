@@ -5,17 +5,23 @@ pkgrel=1
 pkgdesc="The GNU Bourne Again shell"
 url=https://www.gnu.org/software/bash/bash.html
 licenses=('GPL')
-sources=("http://ftpmirror.gnu.org/gnu/bash/$pkgname-$_basever.tar.gz")
-sha256sums=('b4a80f2ac66170b2913efbfb9f2594f1f76c7b1afd11f799e22035d63077fb4d')
+sources=(http://ftpmirror.gnu.org/gnu/bash/$pkgname-$_basever.tar.gz
+         system.bashrc)
+sha256sums=('b4a80f2ac66170b2913efbfb9f2594f1f76c7b1afd11f799e22035d63077fb4d'
+            'SKIP')
 depends=(readline ncurses)
+
+prepare() {
+  mv system.bashrc $pkgname-$_basever
+}
 
 build() {
   cd "$pkgname-$_basever"
 
   _bashconfig=(-DDEFAULT_PATH_VALUE=\'\"/usr/local/sbin:/usr/local/bin:/usr/bin\"\'
                -DSTANDARD_UTILS_PATH=\'\"/usr/bin\"\'
-               -DSYS_BASHRC=\'\"$pkgprefix/etc/bash.bashrc\"\'
-               -DSYS_BASH_LOGOUT=\'\"$pkgprefix/etc/bash.bash_logout\"\'
+               -DSYS_BASHRC=\'\"$SYSCONF_DIR/bash.bashrc\"\'
+               -DSYS_BASH_LOGOUT=\'\"$SYSCONF_DIR/etc/bash.bash_logout\"\'
                -DNON_INTERACTIVE_LOGIN_SHELLS)
 
   export CFLAGS="${CFLAGS} ${_bashconfig[@]}"
@@ -37,4 +43,8 @@ package() {
       examples/loadables/Makefile
 
   make DESTDIR="$pkgdir" install
+
+  # system-wide defaults. add to the package's etc/ as an example
+  mkdir $pkgdir$pkgprefix/etc
+  install -m644 system.bashrc "$pkgdir$pkgprefix/etc/bash.bashrc"
 }
