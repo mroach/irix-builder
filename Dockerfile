@@ -1,16 +1,5 @@
 FROM debian:buster-slim AS builder-base
 
-ARG IRIX_VER=6.5.30
-ARG GCC_URL=http://dl.mroach.com/irix/buildtools/gcc-4.7-irix.tar.xz
-ARG IRIX_ROOT_URL=http://dl.mroach.com/irix/buildtools/irix-root.${IRIX_VER}.tar.xz
-ARG BINUTILS_URL=http://dl.mroach.com/irix/buildtools/binutils-2.17a.tar.xz
-ARG MOTIF_URL=http://dl.mroach.com/irix/buildtools/motif-2.1.tar.xz
-
-ARG GCC_SHA256=daa730e1ad14ea10728dfbbfa59a7bb3075005f3dcc25d755b053fdec4daaa01
-ARG IRIX_ROOT_SHA256=424bff47951dcdc0552495c56acff48b7bf1c40c493133896cfd9891021d6a56
-ARG BINUTILS_SHA256=e4be18fec00212f187c4423088faf4fe99aee87f040068f4c1fe75b7176adc46
-ARG MOTIF_SHA256=5828d7180dc668f1ded9addef620bdc06e2c561f74c379fec838f1c9bc3da40f
-
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       build-essential \
@@ -21,7 +10,6 @@ RUN apt-get update && \
       libmpfr-dev \
       libmpc-dev \
       texinfo  \
-      autoconf \
       gettext \
       curl \
       ca-certificates && \
@@ -29,19 +17,28 @@ RUN apt-get update && \
 
 WORKDIR /opt
 
-RUN mkdir /opt/src
+ENV TARGET=mips-sgi-irix6.5 \
+    SYSROOT=/opt/irix-root \
+    X11_ROOT=/opt/motif
 
-RUN mkdir -p /opt/src/gcc-build \
-             /opt/gcc/mips-sgi-irix6.5 \
-             /opt/irix-root \
+RUN mkdir -p /opt/src \
+             /opt/src/gcc-build \
+             /opt/gcc/$TARGET \
+             $SYSROOT \
              /opt/src/binutils
 
+ARG IRIX_VER=6.5.30
+ARG IRIX_ROOT_URL=http://dl.mroach.com/irix/buildtools/irix-root.${IRIX_VER}.tar.xz
+ARG IRIX_ROOT_SHA256=424bff47951dcdc0552495c56acff48b7bf1c40c493133896cfd9891021d6a56
 RUN archive=$(basename $IRIX_ROOT_URL); \
     curl -LO $IRIX_ROOT_URL && \
     echo "$IRIX_ROOT_SHA256  $archive" | shasum -a256 -c && \
-    tar xf $archive -C /opt/irix-root && \
+    tar xf $archive -C $SYSROOT && \
     rm $archive
 
+# Having motif allows us to build GUI apps
+ARG MOTIF_URL=http://dl.mroach.com/irix/buildtools/motif-2.1.tar.xz
+ARG MOTIF_SHA256=5828d7180dc668f1ded9addef620bdc06e2c561f74c379fec838f1c9bc3da40f
 RUN archive=$(basename $MOTIF_URL); \
     curl -LO $MOTIF_URL && \
     echo "$MOTIF_SHA256  $archive" | shasum -a256 -c && \
@@ -49,6 +46,26 @@ RUN archive=$(basename $MOTIF_URL); \
     rm $archive && \
     mv Motif-2.1 /opt/motif
 
+#ARG BINUTILS_URL=http://ftpmirror.gnu.org/gnu/binutils/binutils-2.17a.tar.bz2
+#ARG BINUTILS_SHA256=b8b6363121a99aaf0309d0a6f63a18c203ddbb34f53683c9a56d568be2b6a549
+ARG BINUTILS_VER=2.33.1
+ARG BINUTILS_URL=http://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VER}.tar.xz
+ARG BINUTILS_SHA256=ab66fc2d1c3ec0359b8e08843c9f33b63e8707efdff5e4cc5c200eae24722cbf
+RUN archive=$(basename $BINUTILS_URL); \
+    curl -LO $BINUTILS_URL && \
+    echo "$BINUTILS_SHA256  $archive" | shasum -a256 -c && \
+    tar xf $archive -C /opt/src/binutils && \
+    rm $archive && \
+    cd /opt/src/binutils/binutils-${BINUTILS_VER} && \
+    ./configure --target=$TARGET \
+                --prefix=/opt/binutils \
+                --with-sysroot=$SYSROOT \
+                --enable-werror=no && \
+    make && make install && make clean && \
+    rm -rf /opt/src/binutils
+
+ARG GCC_URL=http://dl.mroach.com/irix/buildtools/gcc-4.7-irix.tar.xz
+ARG GCC_SHA256=daa730e1ad14ea10728dfbbfa59a7bb3075005f3dcc25d755b053fdec4daaa01
 RUN archive=$(basename $GCC_URL); \
     curl -LO $GCC_URL && \
     echo "$GCC_SHA256  $archive" | shasum -a256 -c && \
@@ -56,32 +73,19 @@ RUN archive=$(basename $GCC_URL); \
     rm $archive && \
     mv gcc-4.7-irix /opt/src/gcc
 
-RUN ln -s /opt/irix-root/usr/include /opt/gcc/mips-sgi-irix6.5/sys-include && \
-    ln -s /opt/irix-root/usr/lib32 /usr/lib32
+RUN ln -s $SYSROOT/usr/include /opt/gcc/$TARGET/sys-include && \
+    ln -s $SYSROOT/usr/lib32 /usr/lib32
 
-COPY files/stdlib_core.h /opt/gcc/mips-sgi-irix6.5/sys-include/internal/
+COPY files/stdlib_core.h /opt/gcc/$TARGET/sys-include/internal/
 COPY files/gcc.texi /opt/src/gcc/gcc/doc/
 
-RUN archive=$(basename $BINUTILS_URL); \
-    curl -LO $BINUTILS_URL && \
-    echo "$BINUTILS_SHA256  $archive" | shasum -a256 -c && \
-    tar xf $archive -C /opt/src/binutils && \
-    rm $archive && \
-    cd /opt/src/binutils/binutils-2.17 && \
-    ./configure --target=mips-sgi-irix6.5 \
-                --prefix=/opt/binutils \
-                --with-sysroot=/opt/irix-root \
-                --enable-werror=no && \
-    make && make install && make clean && \
-    rm -rf /opt/src/binutils
-
-RUN export AS_FOR_TARGET="mips-sgi-irix6.5-as" \
-           LD_FOR_TARGET="mips-sgi-irix6.5-ld" \
-           NM_FOR_TARGET="mips-sgi-irix6.5-nm" \
-           OBJDUMP_FOR_TARGET="mips-sgi-irix6.5-objdump" \
-           RANLIB_FOR_TARGET="mips-sgi-irix6.5-ranlib" \
-           STRIP_FOR_TARGET="mips-sgi-irix6.5-strip" \
-           READELF_FOR_TARGET="mips-sgi-irix6.5-readelf" \
+RUN export AS_FOR_TARGET="$TARGET-as" \
+           LD_FOR_TARGET="$TARGET-ld" \
+           NM_FOR_TARGET="$TARGET-nm" \
+           OBJDUMP_FOR_TARGET="$TARGET-objdump" \
+           RANLIB_FOR_TARGET="$TARGET-ranlib" \
+           STRIP_FOR_TARGET="$TARGET-strip" \
+           READELF_FOR_TARGET="$TARGET-readelf" \
            target_configargs="--enable-libstdcxx-threads=no" \
            PATH=/opt/binutils/bin:$PATH && \
     env && \
@@ -89,25 +93,26 @@ RUN export AS_FOR_TARGET="mips-sgi-irix6.5-as" \
     /opt/src/gcc/configure --enable-obsolete \
                            --disable-multilib \
                            --prefix=/opt/gcc \
-                           --with-build-sysroot=/opt/irix-root \
-                           --target=mips-sgi-irix6.5 \
+                           --with-build-sysroot=$SYSROOT \
+                           --target=$TARGET \
                            --disable-nls \
                            --enable-languages=c,c++ && \
     make -j $(nproc) && make install && \
-    rm -rf /opt/gcc/mips-sgi-irix6.5
+    rm -rf /opt/gcc/$TARGET
 
-RUN mkdir /opt/gcc/mips-sgi-irix6.5 && \
-    ln -s /opt/binutils/mips-sgi-irix6.5/bin /opt/gcc/mips-sgi-irix6.5/bin && \
-    ln -s /opt/irix-root/usr/include /opt/gcc/mips-sgi-irix6.5/sys-include && \
-    cp /opt/src/gcc-build/mips-sgi-irix6.5/libgcc/libgcc_s.so* \
-        /opt/gcc/lib/gcc/mips-sgi-irix6.5/4.7.4/. && \
-    cp /opt/src/gcc-build/mips-sgi-irix6.5/libgcc/libgcc_s.so* \
-        /opt/irix-root/lib32/. && \
-    cp /opt/src/gcc-build/mips-sgi-irix6.5/libstdc++-v3/src/.libs/libstdc++.so* \
-       /opt/gcc/lib/gcc/mips-sgi-irix6.5/4.7.4/. && \
-    cp /opt/src/gcc-build/mips-sgi-irix6.5/libstdc++-v3/src/.libs/libstdc++.a \
-       /opt/gcc/lib/gcc/mips-sgi-irix6.5/4.7.4/.
+RUN mkdir /opt/gcc/$TARGET && \
+    ln -s /opt/binutils/$TARGET/bin /opt/gcc/$TARGET/bin && \
+    ln -s $SYSROOT/usr/include /opt/gcc/$TARGET/sys-include && \
+    cp /opt/src/gcc-build/$TARGET/libgcc/libgcc_s.so* \
+        /opt/gcc/lib/gcc/$TARGET/4.7.4/. && \
+    cp /opt/src/gcc-build/$TARGET/libgcc/libgcc_s.so* \
+        $SYSROOT/lib32/. && \
+    cp /opt/src/gcc-build/$TARGET/libstdc++-v3/src/.libs/libstdc++.so* \
+       /opt/gcc/lib/gcc/$TARGET/4.7.4/. && \
+    cp /opt/src/gcc-build/$TARGET/libstdc++-v3/src/.libs/libstdc++.a \
+       /opt/gcc/lib/gcc/$TARGET/4.7.4/.
 
+# Apply patches that should be available to every build
 COPY patches/mman_map_anon.patch .
 RUN patch -d/ -p0 < mman_map_anon.patch && \
     rm mman_map_anon.patch
@@ -118,7 +123,8 @@ RUN apt-get install -y --no-install-recommends \
       libtool \
       python2 \
       unzip \
-      sqlite3
+      sqlite3 \
+      autoconf
 
 RUN mkdir -p /opt/pkg \
              /opt/cache \
@@ -128,21 +134,17 @@ COPY buildpkg.sh /opt/bin/buildpkg
 COPY gen_index.sh /opt/bin/gen_index
 
 ENV PATH=/opt/binutils/bin:/opt/gcc/bin:/opt/bin:$PATH \
-    AR="mips-sgi-irix6.5-ar" \
-    AS="mips-sgi-irix6.5-as" \
-    CC="mips-sgi-irix6.5-gcc" \
-    CXX="mips-sgi-irix6.5-g++" \
-    RANLIB="mips-sgi-irix6.5-ranlib" \
-    STRIP="mips-sgi-irix6.5-strip" \
-    LD="mips-sgi-irix6.5-ld" \
-    CFLAGS="-B/opt/binutils/bin/mips-sgi-irix6.5- --sysroot=/opt/irix-root" \
-    CXXFLAGS="-B/opt/binutils/bin/mips-sgi-irix6.5- --sysroot=/opt/irix-root" \
-    TARGET=mips-sgi-irix6.5 \
-    PREFIX=/opt/gcc \
-    X11_PATH=/opt/motif
+    AR="$TARGET-ar" \
+    AS="$TARGET-as" \
+    CC="$TARGET-gcc" \
+    CXX="$TARGET-g++" \
+    RANLIB="$TARGET-ranlib" \
+    STRIP="$TARGET-strip" \
+    LD="$TARGET-ld" \
+    CFLAGS="-B/opt/binutils/bin/$TARGET- --sysroot=$SYSROOT" \
+    CXXFLAGS="-B/opt/binutils/bin/$TARGET- --sysroot=$SYSROOT"
 
 ENV TARGET_PREFIX=$PREFIX/$TARGET
-
 
 FROM builder-base AS builder-dev
 
