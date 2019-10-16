@@ -1,0 +1,8 @@
+# Ignore all files by default
+# Otherwise this whole directory is sent to docker during `docker build`
+**
+
+# Allowed files
+!/files
+!/patches
+!/*.sh
