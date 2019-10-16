@@ -33,8 +33,6 @@ autocurl() {
   PATH=/usr/bin:/opt/bin:/opt/local/bin:$PATH curl $*
 }
 
-echo_debug "Mirror is $IPM_MIRROR"
-
 ensure_env() {
   for d in $PKG_CACHE_DIR $WORKDIR_ROOT $LINK_LOCAL_DIR $INSTALL_DIR; do
     if [ ! -d $d ]; then
@@ -304,6 +302,8 @@ for arg in "${@-}"; do
 done
 
 cd $WORKDIR_ROOT
+
+echo_debug "Mirror is $IPM_MIRROR"
 
 case "$command" in
   help|--help)
