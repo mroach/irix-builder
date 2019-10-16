@@ -199,7 +199,7 @@ quiet_run() {
 	else
 		logfile=$(tempfile)
 		("$@") >>$logfile 2>&1 || {
-			echo "command failed: $@"
+			echo "command failed with exit code $?: $@"
 			echo "Last lines of log $logfile:"
 			echo "--------------------------------------------------"
 			echo "... [$(wc -l $logfile | awk '{print $1}') lines]"
