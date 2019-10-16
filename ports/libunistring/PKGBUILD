@@ -1,0 +1,21 @@
+pkgname=libunistring
+pkgver=0.9.10
+pkgdesc='Library for manipulating Unicode strings and C strings'
+url='https://www.gnu.org/software/libunistring/'
+license=(GPL)
+sources=(https://ftp.gnu.org/gnu/$pkgname/${pkgname}-${pkgver}.tar.xz)
+md5sums=('db08bb384e81968957f997ec9808926e')
+
+build() {
+  cd $pkgname-$pkgver
+  ./configure --prefix=$pkgprefix --host=$TARGET
+
+  # workaround for missing SIZE_MAX and uintptr_t
+  sed -i'' 's/include <stdint.h>/include <stdint-gcc.h>/' lib/{malloca,xsize,str-two-way}.h
+
+  make
+}
+
+package() {
+  make -C $pkgname-$pkgver DESTDIR="$pkgdir" install
+}
