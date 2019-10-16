@@ -29,6 +29,10 @@ echo_success() {
   echo "\033[92m==>\033[0m \033[1m$@\033[0m" >&2
 }
 
+autocurl() {
+  PATH=/usr/bin:/opt/bin:/opt/local/bin:$PATH curl $*
+}
+
 echo_debug "Mirror is $IPM_MIRROR"
 
 ensure_env() {
@@ -58,7 +62,7 @@ fetch() {
   else
     url=$IPM_MIRROR/pkg/$pkgfile
     echo_info "Fetching $url"
-    /opt/local/bin/curl -# -o $cachefile $url
+    autocurl -# -o $cachefile $url
   fi
 
   echo $cachefile
