@@ -86,6 +86,7 @@ if [ -n "$broken" ]; then
 	echo_info "Package is marked as broken. Aborting build. Reason:"
 	echo
 	echo "$broken" | sed 's/^/    /'
+	echo
 	exit 0
 fi
 
@@ -211,6 +212,7 @@ quiet_run() {
 
 DEP_CPPFLAGS=()
 DEP_LDFLAGS=()
+DEP_BINPATH=()
 
 if [ -v depends ]; then
 	for dep in "${depends[@]}"; do
@@ -226,6 +228,7 @@ if [ -v depends ]; then
 		# lib dirs to the compiler flags so it can find them
 		DEP_CPPFLAGS+=("-I$(whereis_dep $dep)/include")
 		DEP_LDFLAGS+=("-L$(whereis_dep $dep)/lib")
+		DEP_BINPATH+=($(whereis_dep $dep)/bin)
 	done
 fi
 
@@ -263,8 +266,10 @@ echo_info "Preparing"
 
 echo_info "Building"
 (
-	export CPPFLAGS="${DEP_CPPFLAGS[@]} ${CPPFLAGS-}"
-	export LDFLAGS="${DEP_LDFLAGS[@]} ${LDFLAGS-}"
+	dep_bin_paths=$(printf ":%s" "${DEP_BINPATH[@]}")
+	export CPPFLAGS="${DEP_CPPFLAGS[*]} ${CPPFLAGS-}"
+	export LDFLAGS="${DEP_LDFLAGS[*]} ${LDFLAGS-}"
+	export PATH="${PATH}$dep_bin_paths"
 
 	quiet_run "build"
 )
