@@ -258,6 +258,7 @@ maybe_update_file() {
 
 update() {
   maybe_update_file $IPM_MIRROR/pkg/index.db /opt/var/ipm/index.db
+  maybe_update_file $IPM_MIRROR/pkg/index.csv /opt/var/ipm/index.csv
 }
 
 self_update() {
