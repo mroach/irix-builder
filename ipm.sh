@@ -110,7 +110,7 @@ link() {
   if [ -d $pkgdir/lib ]; then
     echo_info "Linking lib files into $LINK_LIB_DIR"
 
-    find $pkgdir/lib -type f | while read f; do
+    find $pkgdir/lib | while read f; do
       stub=${f#"$pkgdir/lib/"}
       source=$f
       target=$LINK_LIB_DIR/$stub
