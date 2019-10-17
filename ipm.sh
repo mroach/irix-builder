@@ -247,7 +247,7 @@ maybe_update_file() {
 
   newver=`sha1sum $tmpfile`
 
-  if [ "$newver" = `sha1sum $destfile` ]; then
+  if [ -f $destfile ] && [ "$newver" = `sha1sum $destfile` ]; then
     echo_warn "$destfile is already the latest version"
     return 0
   fi
