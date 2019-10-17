@@ -147,8 +147,12 @@ much a translation of his work into Docker.
 The build scripts at [irixports] were a help in understanding some of the
 oddities when compiling modern software for IRIX.
 
+The scripts of [didbs] are a great source of knowledge for porting. Some of the
+patches and build configs were copied straight from there. Big help.
+
 [compilertron]: https://github.com/unxmaal/compilertron
 [unxmaal]: https://github.com/unxmaal
 [irixports]: https://github.com/larb0b/irixports
 [Docker]: https://www.docker.com
 [Homebrew]: https://brew.sh
+[didbs]: https://github.com/danielhams/didbs

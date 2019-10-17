@@ -1,0 +1,38 @@
+pkgname=mrxvt
+pkgver=0.5.4
+pkgdesc="A lightweight, tabbed terminal emulator"
+url=http://materm.sourceforge.net/wiki/Main/HomePage
+sources=("https://netix.dl.sourceforge.net/project/materm/mrxvt%20source/$pkgver/mrxvt-$pkgver.tar.gz"
+         patches/sgi-fixes.patch)
+sha256sums=(f403ad5a908fcd38a55ed0a7e1b85584cb77be8781199653a39b8af1a9ad10d7 SKIP)
+depends=(libjpeg libpng zlib)
+
+prepare() {
+  cd $pkgname-$pkgver
+
+  patch -p1 -i $workdir/sgi-fixes.patch
+
+  # comment-out aborts caused by cross-compiling checks
+  sed -i'' '12052,12056 {s/^/#/};12105 {s/^/#/}' configure
+}
+
+build() {
+  cd $pkgname-$pkgver
+
+  # set build host to x86_64-pc-linux; it doesn't like x86_64-unknown-linux
+  ./configure --prefix=$pkgprefix \
+              --build=x86_64-pc-linux \
+              --host=$TARGET \
+              --enable-sgi-scroll \
+              --with-tab-radius=0 \
+              --x-includes=$X11_ROOT/include \
+              --x-libraries=$X11_ROOT/lib32
+
+  make
+}
+
+package() {
+  cd $pkgname-$pkgver
+
+  make DESTDIR="$pkgdir" install
+}
