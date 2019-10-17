@@ -29,6 +29,11 @@ echo_success() {
   echo "\033[92m==>\033[0m \033[1m$@\033[0m" >&2
 }
 
+if [ `whoami` != "root" ]; then
+  echo_error "Must be root. Try again with sudo or as root."
+  exit 1
+fi
+
 autocurl() {
   PATH=/usr/bin:/opt/bin:/opt/local/bin:$PATH curl $*
 }
