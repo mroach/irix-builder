@@ -48,15 +48,16 @@ RUN archive=$(basename $MOTIF_URL); \
 
 #ARG BINUTILS_URL=http://ftpmirror.gnu.org/gnu/binutils/binutils-2.17a.tar.bz2
 #ARG BINUTILS_SHA256=b8b6363121a99aaf0309d0a6f63a18c203ddbb34f53683c9a56d568be2b6a549
-ARG BINUTILS_VER=2.33.1
-ARG BINUTILS_URL=http://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VER}.tar.xz
-ARG BINUTILS_SHA256=ab66fc2d1c3ec0359b8e08843c9f33b63e8707efdff5e4cc5c200eae24722cbf
+ARG BINUTILS_VER=2.17a
+ARG BINUTILS_VER_BASE=2.17
+ARG BINUTILS_URL=http://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VER}.tar.bz2
+ARG BINUTILS_SHA256=b8b6363121a99aaf0309d0a6f63a18c203ddbb34f53683c9a56d568be2b6a549
 RUN archive=$(basename $BINUTILS_URL); \
     curl -LO $BINUTILS_URL && \
     echo "$BINUTILS_SHA256  $archive" | shasum -a256 -c && \
     tar xf $archive -C /opt/src/binutils && \
     rm $archive && \
-    cd /opt/src/binutils/binutils-${BINUTILS_VER} && \
+    cd /opt/src/binutils/binutils-$BINUTILS_VER_BASE && \
     ./configure --target=$TARGET \
                 --prefix=/opt/binutils \
                 --with-sysroot=$SYSROOT \
